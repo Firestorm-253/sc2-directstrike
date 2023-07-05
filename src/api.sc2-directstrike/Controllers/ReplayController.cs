@@ -4,17 +4,17 @@ namespace api.sc2_directstrike.Controllers;
 using DTOs;
 
 [ApiController]
-[Route("replays")]
+[Route(ROUTE)]
 public class ReplayController : ControllerBase
 {
-    public ReplayController() { }
+    const string ROUTE = "replays";
 
     [HttpGet]
     public async Task<IEnumerable<Replay?>> Get()
     {
         string query =
             $"SELECT * " +
-            $"FROM replays ";
+            $"FROM {ROUTE} ";
 
         var result = await DbContext.ReadFromDb(query);
 
@@ -26,7 +26,7 @@ public class ReplayController : ControllerBase
     {
         string query =
             $"SELECT * " +
-            $"FROM replays " +
+            $"FROM {ROUTE} " +
             $"WHERE Id='{id}' ";
 
         var result = await DbContext.ReadFromDb(query);
@@ -52,7 +52,7 @@ public class ReplayController : ControllerBase
     [HttpPost()]
     public async Task Post(Replay replay)
     {
-        await DbContext.WriteToDb($"INSERT INTO replays (Id, GameTime) " +
+        await DbContext.WriteToDb($"INSERT INTO {ROUTE} (Id, GameTime) " +
                                   $"VALUES ({replay.Id}, '{replay.GameTime:yyyy-dd-MM hh:mm:ss}') ");
     }
 }

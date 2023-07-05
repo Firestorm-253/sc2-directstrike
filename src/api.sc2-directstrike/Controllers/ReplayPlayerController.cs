@@ -4,15 +4,17 @@ namespace api.sc2_directstrike.Controllers;
 using DTOs;
 
 [ApiController]
-[Route("replayPlayers")]
+[Route(ROUTE)]
 public class ReplayPlayerController : ControllerBase
 {
+    const string ROUTE = "replay_players";
+
     [HttpGet]
     public async Task<IEnumerable<ReplayPlayer?>> Get()
     {
         string query =
             $"SELECT * " +
-            $"FROM replay_players ";
+            $"FROM {ROUTE} ";
 
         var result = await DbContext.ReadFromDb(query);
 
@@ -24,7 +26,7 @@ public class ReplayPlayerController : ControllerBase
     {
         string query =
             $"SELECT * " +
-            $"FROM replay_players " +
+            $"FROM {ROUTE} " +
             $"WHERE Id='{id}' ";
 
         var result = await DbContext.ReadFromDb(query);
@@ -38,7 +40,7 @@ public class ReplayPlayerController : ControllerBase
     {
         string query =
             $"SELECT * " +
-            $"FROM replay_players " +
+            $"FROM {ROUTE} " +
             $"WHERE ReplayId='{replayId}' ";
 
         var result = await DbContext.ReadFromDb(query);
@@ -51,7 +53,7 @@ public class ReplayPlayerController : ControllerBase
     {
         string query =
             $"SELECT * " +
-            $"FROM replay_players " +
+            $"FROM {ROUTE} " +
             $"WHERE PlayerId='{playerId}' ";
 
         var result = await DbContext.ReadFromDb(query);
