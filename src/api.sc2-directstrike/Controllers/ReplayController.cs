@@ -21,7 +21,7 @@ public class ReplayController : ControllerBase
         return result.Select(entry => Create(entry));
     }
 
-    [HttpGet("id={id}")]
+    [HttpGet("{id}")]
     public async Task<Replay?> GetById(int id)
     {
         string query =
