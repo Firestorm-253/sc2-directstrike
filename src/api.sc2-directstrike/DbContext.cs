@@ -20,22 +20,31 @@ public static class DbContext
         Connection.Open();
     }
 
-    public static async Task<List<object[]>> ReadFromDb(string query)
+    public static async Task<List<Dictionary<string, object>>> ReadFromDb(string query)
     {
         var command = new MySqlCommand(query, Connection);
-        var rows = new List<object[]>();
+        var entries = new List<Dictionary<string, object>>();
 
         using (var dataReader = await command.ExecuteReaderAsync())
         {
+            var columns = await dataReader.GetColumnSchemaAsync();
+
             while (await dataReader.ReadAsync())
             {
-                var row = new object[dataReader.FieldCount];
-                dataReader.GetValues(row);
-                rows.Add(row);
+                var values = new object[dataReader.FieldCount];
+                dataReader.GetValues(values);
+
+                var entry = new Dictionary<string, object>();
+                for (int i = 0; i < values.Length; i++)
+                {
+                    entry.Add(columns[i].ColumnName, values[i]);
+                }
+
+                entries.Add(entry);
             }
         };
 
-        return rows;
+        return entries;
     }
 
     public static async Task WriteToDb(string query)
