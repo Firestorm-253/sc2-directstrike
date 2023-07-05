@@ -3,7 +3,8 @@
 public record ReplayPlayer
 {
     public int Id { get; init; }
-    public Player Player { get; init; } = null!;
+    public int PlayerId { get; init; }
+
     public string Commander { get; init; } = null!;
     public int Team { get; init; }
     public int Position { get; init; }

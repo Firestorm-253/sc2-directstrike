@@ -4,5 +4,5 @@ public record Replay
 {
     public int Id { get; init; }
     public DateTime GameTime { get; init; }
-    public ReplayPlayer[] ReplayPlayers { get; init; } = null!;
+    public int[] ReplayPlayersIds { get; init; } = null!;
 }
