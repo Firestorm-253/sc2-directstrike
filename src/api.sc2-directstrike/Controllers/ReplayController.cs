@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using MySqlConnector;
 
 namespace api.sc2_directstrike.Controllers;
 using DTOs;
@@ -8,14 +7,7 @@ using DTOs;
 [Route("replays")]
 public class ReplayController : ControllerBase
 {
-    private readonly ILogger<ReplayController> logger;
-    private readonly IConfiguration configuration;
-
-    public ReplayController(ILogger<ReplayController> logger, IConfiguration configuration)
-    {
-        this.logger = logger;
-        this.configuration = configuration;
-    }
+    public ReplayController() { }
 
     [HttpGet]
     public async Task<IEnumerable<Replay?>> Get()
