@@ -4,8 +4,6 @@ class Program
 {
     static void Main(string[] args)
     {
-        DbContext.Connect("server90.hostfactory.ch", 3306, "db_mysql", "LaurinZehnder", "La2003Sh");
-
         RunAPI(args);
     }
 
@@ -26,6 +24,21 @@ class Program
         //app.UseEndpoints(endpoints =>
         //{
         //});
+
+        var privatData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText("privatdata.json"))!;
+
+        if (app.Environment.IsProduction())
+        {
+            DbContext.Connect("server90.hostfactory.ch", 3306, "db_mysql",
+                user: privatData["user"],
+                password: privatData["password"]);
+        }
+        else if (app.Environment.IsDevelopment())
+        {
+            DbContext.Connect("server90.hostfactory.ch", 3306, "testdb",
+                user: privatData["user"],
+                password: privatData["password"]);
+        }
 
         app.UseHttpsRedirection();
 
