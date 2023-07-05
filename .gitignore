@@ -476,3 +476,4 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+src/api.sc2-directstrike/privatdata.json
