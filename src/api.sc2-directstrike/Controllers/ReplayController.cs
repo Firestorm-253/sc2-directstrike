@@ -26,8 +26,9 @@ public class ReplayController : ControllerBase
     {
         string query =
             $"SELECT * " +
-            $"FROM {ROUTE} " +
-            $"WHERE Id='{id}' ";
+            $"FROM {ROUTE} ";
+
+        query += query.AddCondition("Id", id);
 
         var result = await DbContext.ReadFromDb(query);
         var entry = result.Single();
