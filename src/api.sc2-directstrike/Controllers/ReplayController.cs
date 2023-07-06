@@ -49,8 +49,8 @@ public class ReplayController : ControllerBase
         };
     }
 
-    [HttpPost()]
-    public async Task Post(Replay replay)
+    [HttpPost]
+    public async Task Post([FromBody] Replay replay)
     {
         await DbContext.WriteToDb($"INSERT INTO {ROUTE} (Id, GameTime) " +
                                   $"VALUES ({replay.Id}, '{replay.GameTime:yyyy-dd-MM hh:mm:ss}') ");
