@@ -21,7 +21,7 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Build
-      run: dotnet build ./src/pax.dsstats.web/dsstats.Tests/dsstats.Tests.csproj --no-restore
+      run: dotnet build ./src/api.sc2-directstrike/api.sc2-directstrike.csproj
     - name: Test
       run: dotnet test --no-build --verbosity normal
       
