@@ -23,5 +23,5 @@ jobs:
     - name: Build
       run: dotnet build ./src/api.sc2-directstrike/api.sc2-directstrike.csproj
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test ./src/api.sc2-directstrike/api.sc2-directstrike.csproj --no-build --verbosity normal
       
