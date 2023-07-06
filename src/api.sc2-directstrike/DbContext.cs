@@ -52,4 +52,16 @@ public static class DbContext
         var command = new MySqlCommand(query, Connection);
         await command.ExecuteNonQueryAsync();
     }
+
+    public static string AddCondition(this string query, string name, object? value)
+    {
+        if (value == null)
+        {
+            return string.Empty;
+        }
+
+        string connectorString = !query.Contains("WHERE") ? "WHERE" : "AND";
+        return $"{connectorString} {name}='{value}' ";
+    }
+
 }
