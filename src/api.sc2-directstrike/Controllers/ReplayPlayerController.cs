@@ -9,18 +9,6 @@ public class ReplayPlayerController : ControllerBase
 {
     const string ROUTE = "replay_players";
 
-    [HttpGet]
-    public async Task<IEnumerable<ReplayPlayer?>> Get()
-    {
-        string query =
-            $"SELECT * " +
-            $"FROM {ROUTE} ";
-
-        var result = await DbContext.ReadFromDb(query);
-
-        return result.Select(entry => Create(entry));
-    }
-
     [HttpGet("{id}")]
     public async Task<ReplayPlayer?> GetById(int id)
     {
@@ -35,26 +23,16 @@ public class ReplayPlayerController : ControllerBase
         return Create(entry);
     }
 
-    [HttpGet("replayId={replayId}")]
-    public async Task<IEnumerable<ReplayPlayer?>> GetByReplayId(int replayId)
+    [HttpGet]
+    public async Task<IEnumerable<ReplayPlayer?>> Get([FromQuery(Name = "replayId")] int? replayId,
+                                                [FromQuery(Name = "playerId")] int? playerId)
     {
         string query =
             $"SELECT * " +
-            $"FROM {ROUTE} " +
-            $"WHERE ReplayId='{replayId}' ";
+            $"FROM {ROUTE} ";
 
-        var result = await DbContext.ReadFromDb(query);
-
-        return result.Select(entry => Create(entry));
-    }
-
-    [HttpGet("playerId={playerId}")]
-    public async Task<IEnumerable<ReplayPlayer?>> GetByPlayerId(int playerId)
-    {
-        string query =
-            $"SELECT * " +
-            $"FROM {ROUTE} " +
-            $"WHERE PlayerId='{playerId}' ";
+        query += query.AddCondition("ReplayId", replayId);
+        query += query.AddCondition("PlayerId", playerId);
 
         var result = await DbContext.ReadFromDb(query);
 
