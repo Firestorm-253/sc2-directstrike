@@ -3,23 +3,11 @@
 namespace api.sc2_directstrike.Controllers;
 using DTOs;
 
-[ApiController]
 [Route(ROUTE)]
+[ApiController]
 public class PlayerController : ControllerBase
 {
     const string ROUTE = "players";
-
-    [HttpGet]
-    public async Task<IEnumerable<Player?>> Get()
-    {
-        string query =
-            $"SELECT * " +
-            $"FROM {ROUTE} ";
-
-        var result = await DbContext.ReadFromDb(query);
-
-        return result.Select(entry => Create(entry));
-    }
 
     [HttpGet("{id}")]
     public async Task<Player?> GetById(int id)
@@ -35,32 +23,20 @@ public class PlayerController : ControllerBase
         return Create(entry);
     }
 
-    [HttpGet("toonId={toonId}")]
-    public async Task<Player?> GetByToonId(int toonId)
+    [HttpGet]
+    public async Task<IEnumerable<Player?>> Get([FromQuery(Name = "name")] string? name,
+                                                [FromQuery(Name = "toonId")] int? toonId)
     {
         string query =
             $"SELECT * " +
-            $"FROM {ROUTE}  " +
-            $"WHERE ToonId='{toonId}' ";
+            $"FROM {ROUTE} ";
+
+        query += query.AddCondition("Name", name);
+        query += query.AddCondition("ToonId", toonId);
 
         var result = await DbContext.ReadFromDb(query);
-        var entry = result.Single();
 
-        return Create(entry);
-    }
-
-    [HttpGet("name={name}")]
-    public async Task<Player?> GetByName(string name)
-    {
-        string query =
-            $"SELECT * " +
-            $"FROM {ROUTE} " +
-            $"WHERE Name='{name}' ";
-
-        var result = await DbContext.ReadFromDb(query);
-        var entry = result.Single();
-
-        return Create(entry);
+        return result.Select(entry => Create(entry));
     }
 
     private static Player? Create(Dictionary<string, object>? entry)
