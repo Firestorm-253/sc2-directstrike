@@ -44,4 +44,24 @@ public class DbContextTests
 
         Assert.Greater(result.Count, 0);
     }
+
+    [Test]
+    public void WriteToDb()
+    {
+        string pkt = new PKTController().RequestNewPKT();
+        string table = "replays";
+
+        dbContext.WriteToDb(pkt, table, new DTOs.Replay()).Wait();
+
+
+        string query = $"SELECT * " +
+                       $"FROM {table} ";
+        query += DbContext.AddCondition(query, "PKT", pkt);
+
+        var result = dbContext.ReadFromDb(query).GetAwaiter().GetResult();
+
+        Assert.IsNotNull(result);
+
+        Assert.Greater(result.Count, 0);
+    }
 }
