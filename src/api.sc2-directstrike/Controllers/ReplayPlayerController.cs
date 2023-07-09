@@ -10,13 +10,15 @@ public class ReplayPlayerController : ControllerBase
     const string NAME = "replay_players";
 
     [HttpGet("{id}")]
-    public async Task<ReplayPlayer?> GetById(int id)
+    public async Task<ReplayPlayer?> GetById(string pkt, int id)
     {
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";
 
+        query += query.AddCondition("PKT", pkt);
         query += query.AddCondition("Id", id);
+
         var result = await DbContext.ReadFromDb(query);
         var entry = result.Single();
 
@@ -24,13 +26,15 @@ public class ReplayPlayerController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IEnumerable<ReplayPlayer?>> Get([FromQuery(Name = "replayId")] int? replayId,
-                                                [FromQuery(Name = "playerId")] int? playerId)
+    public async Task<IEnumerable<ReplayPlayer?>> Get(string pkt,
+                                                      [FromQuery(Name = "replayId")] int? replayId,
+                                                      [FromQuery(Name = "playerId")] int? playerId)
     {
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";
 
+        query += query.AddCondition("PKT", pkt);
         query += query.AddCondition("ReplayId", replayId);
         query += query.AddCondition("PlayerId", playerId);
 

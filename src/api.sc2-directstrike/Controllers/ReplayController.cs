@@ -10,11 +10,13 @@ public class ReplayController : ControllerBase
     const string NAME = "replays";
 
     [HttpGet]
-    public async Task<IEnumerable<Replay?>> Get()
+    public async Task<IEnumerable<Replay?>> Get(string pkt)
     {
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";
+
+        query += query.AddCondition("PKT", pkt);
 
         var result = await DbContext.ReadFromDb(query);
 
@@ -22,12 +24,13 @@ public class ReplayController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<Replay?> GetById(int id)
+    public async Task<Replay?> GetById(string pkt, int id)
     {
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";
 
+        query += query.AddCondition("PKT", pkt);
         query += query.AddCondition("Id", id);
 
         var result = await DbContext.ReadFromDb(query);
@@ -51,7 +54,7 @@ public class ReplayController : ControllerBase
     }
 
     [HttpPost]
-    public async Task Post([FromBody] Replay replay)
+    public async Task Post(string pkt, [FromBody] Replay replay)
     {
         await DbContext.WriteToDb(pkt, NAME, replay);
     }
