@@ -1,4 +1,7 @@
-﻿using MySqlConnector;
+﻿using api.sc2_directstrike.DTOs;
+using Microsoft.AspNetCore.Routing;
+using MySqlConnector;
+using System.Text;
 
 namespace api.sc2_directstrike;
 
@@ -51,6 +54,23 @@ public static class DbContext
     {
         var command = new MySqlCommand(query, Connection);
         await command.ExecuteNonQueryAsync();
+    }
+
+    public static async Task WriteToDb(string pkt, string route, Dictionary<string, object> dict)
+    {
+        var names = new StringBuilder("PKT, ");
+        var values = new StringBuilder($"'{pkt}', ");
+
+        foreach (var keyValuePair in dict)
+        {
+            names.Append($"{keyValuePair.Key}, ");
+            values.Append($"'{keyValuePair.Value}', ");
+        }
+        names.Remove(names.Length - 2, 2);
+        values.Remove(values.Length - 2, 2);
+
+        await DbContext.WriteToDb($"INSERT INTO {route} ({names}) " +
+                                  $"VALUES ({values}) ");
     }
 
     public static string AddCondition(this string query, string name, object? value)
