@@ -1,3 +1,5 @@
+using api.sc2_directstrike.Controllers;
+
 namespace api.sc2_directstrike;
 
 class Program
@@ -41,8 +43,6 @@ class Program
         }
 
         app.UseHttpsRedirection();
-
-        app.UseAuthorization();
 
         app.MapControllers();
 

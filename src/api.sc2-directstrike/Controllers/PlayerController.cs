@@ -14,8 +14,8 @@ public class PlayerController : ControllerBase
     {
         string query =
             $"SELECT * " +
-            $"WHERE Id='{id}' ";
             $"FROM {NAME} ";
+        query += query.AddCondition("Id", id);
         
         var result = await DbContext.ReadFromDb(query);
         var entry = result.Single();
