@@ -20,7 +20,7 @@ public class ReplayController : ControllerBase
 
         var result = await Program.DbContext.ReadFromDb(query);
 
-        return result.Select(entry => Create(entry));
+        return result.Select(entry => (Replay)entry);
     }
 
     [HttpGet("{id}")]
@@ -36,21 +36,7 @@ public class ReplayController : ControllerBase
         var result = await Program.DbContext.ReadFromDb(query);
         var entry = result.Single();
         
-        return Create(entry);
-    }
-
-    private static Replay? Create(Dictionary<string, object>? entry)
-    {
-        if (entry == null)
-        {
-            return null;
-        }
-
-        return new Replay()
-        {
-            Id = (int)entry["Id"],
-            GameTime = (DateTime)entry["GameTime"]
-        };
+        return entry;
     }
 
     [HttpPost]

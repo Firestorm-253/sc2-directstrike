@@ -22,7 +22,7 @@ public class PlayerController : ControllerBase
         var result = await Program.DbContext.ReadFromDb(query);
         var entry = result.Single();
 
-        return Create(entry);
+        return entry;
     }
 
     [HttpGet]
@@ -40,22 +40,7 @@ public class PlayerController : ControllerBase
 
         var result = await Program.DbContext.ReadFromDb(query);
 
-        return result.Select(entry => Create(entry));
-    }
-
-    private static Player? Create(Dictionary<string, object>? entry)
-    {
-        if (entry == null)
-        {
-            return null;
-        }
-
-        return new Player()
-        {
-            Id = (int)entry["Id"],
-            ToonId = (int)entry["ToonId"],
-            Name = (string)entry["Name"],
-        };
+        return result.Select(entry => (Player)entry);
     }
 
     //[HttpPost]

@@ -22,7 +22,7 @@ public class ReplayPlayerController : ControllerBase
         var result = await Program.DbContext.ReadFromDb(query);
         var entry = result.Single();
 
-        return Create(entry);
+        return entry;
     }
 
     [HttpGet]
@@ -40,26 +40,7 @@ public class ReplayPlayerController : ControllerBase
 
         var result = await Program.DbContext.ReadFromDb(query);
 
-        return result.Select(entry => Create(entry));
-    }
-
-    private static ReplayPlayer? Create(Dictionary<string, object>? entry)
-    {
-        if (entry == null)
-        {
-            return null;
-        }
-
-        return new ReplayPlayer()
-        {
-            Id = (int)entry["Id"],
-            PlayerId = (int)entry["PlayerId"],
-            ReplayId = (int)entry["ReplayId"],
-
-            Commander = (string)entry["Commander"],
-            Team = (int)entry["Team"],
-            Position = (int)entry["Position"],
-        };
+        return result.Select(entry => (ReplayPlayer)entry);
     }
 
     //[HttpPost]
