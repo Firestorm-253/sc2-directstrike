@@ -1,0 +1,45 @@
+﻿namespace api.sc2_directstrike.tests.UnitTests.Controllers;
+
+using api.sc2_directstrike.Controllers;
+
+public class PlayerControllerTests
+{
+    PlayerController playerController = null!;
+
+    [SetUp]
+    public void Setup()
+    {
+        this.playerController = new PlayerController();
+
+        Program.DbContext = new DbContext();
+        Program.ConnectDb(true);
+    }
+
+    [Test]
+    public void GetById()
+    {
+        string pkt = "read_test";
+        int id = 0;
+
+        var player = this.playerController.GetById(pkt, id).GetAwaiter().GetResult();
+
+        Assert.IsNotNull(player);
+    }
+
+    [Test]
+    public void Get()
+    {
+        string pkt = "read_test";
+        string name = "A";
+        int toonId = 184085;
+
+        var player = this.playerController.Get(pkt, name, null).GetAwaiter().GetResult();
+        Assert.IsNotNull(player);
+
+        player = this.playerController.Get(pkt, null, toonId).GetAwaiter().GetResult();
+        Assert.IsNotNull(player);
+
+        player = this.playerController.Get(pkt, name, toonId).GetAwaiter().GetResult();
+        Assert.IsNotNull(player);
+    }
+}

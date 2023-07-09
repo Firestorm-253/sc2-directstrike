@@ -40,7 +40,7 @@ public class PlayerController : ControllerBase
 
         var result = await Program.DbContext.ReadFromDb(query);
 
-        return result.Select(entry => (Player)entry);
+        return result.Select(entry => (Player)entry!);
     }
 
     //[HttpPost]
