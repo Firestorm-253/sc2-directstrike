@@ -12,7 +12,7 @@ public class ReplayControllerTests
         this.replayController = new ReplayController();
 
         Program.DbContext = new DbContext();
-        Program.ConnectDb(true);
+        Program.ConnectDb("sc2_directstrike_tests");
     }
 
     [Test]

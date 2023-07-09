@@ -10,7 +10,7 @@ public class DbContextTests
     public void Setup()
     {
         this.DbContext = new DbContext();
-        Program.ConnectDb(true, this.DbContext);
+        Program.ConnectDb("sc2_directstrike_tests", this.DbContext);
     }
 
     [Test]
@@ -18,7 +18,7 @@ public class DbContextTests
     {
         if (this.DbContext.Connection == null)
         {
-            Program.ConnectDb(true, this.DbContext);
+            Program.ConnectDb("sc2_directstrike_tests", this.DbContext);
         }
 
         Assert.AreEqual(System.Data.ConnectionState.Open, this.DbContext.Connection!.State);
