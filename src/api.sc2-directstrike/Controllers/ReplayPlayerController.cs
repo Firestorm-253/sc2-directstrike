@@ -16,13 +16,13 @@ public class ReplayPlayerController : ControllerBase
             $"SELECT * " +
             $"FROM {NAME} ";
 
-        query += query.AddCondition("PKT", pkt);
-        query += query.AddCondition("Id", id);
+        query += DbContext.AddCondition(query, "PKT", pkt);
+        query += DbContext.AddCondition(query, "Id", id);
 
-        var result = await DbContext.ReadFromDb(query);
+        var result = await Program.DbContext.ReadFromDb(query);
         var entry = result.Single();
 
-        return Create(entry);
+        return entry;
     }
 
     [HttpGet]
@@ -34,32 +34,13 @@ public class ReplayPlayerController : ControllerBase
             $"SELECT * " +
             $"FROM {NAME} ";
 
-        query += query.AddCondition("PKT", pkt);
-        query += query.AddCondition("ReplayId", replayId);
-        query += query.AddCondition("PlayerId", playerId);
+        query += DbContext.AddCondition(query, "PKT", pkt);
+        query += DbContext.AddCondition(query, "ReplayId", replayId);
+        query += DbContext.AddCondition(query, "PlayerId", playerId);
 
-        var result = await DbContext.ReadFromDb(query);
+        var result = await Program.DbContext.ReadFromDb(query);
 
-        return result.Select(entry => Create(entry));
-    }
-
-    private static ReplayPlayer? Create(Dictionary<string, object>? entry)
-    {
-        if (entry == null)
-        {
-            return null;
-        }
-
-        return new ReplayPlayer()
-        {
-            Id = (int)entry["Id"],
-            PlayerId = (int)entry["PlayerId"],
-            ReplayId = (int)entry["ReplayId"],
-
-            Commander = (string)entry["Commander"],
-            Team = (int)entry["Team"],
-            Position = (int)entry["Position"],
-        };
+        return result.Select(entry => (ReplayPlayer)entry);
     }
 
     //[HttpPost]

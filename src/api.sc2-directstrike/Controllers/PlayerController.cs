@@ -16,13 +16,13 @@ public class PlayerController : ControllerBase
             $"SELECT * " +
             $"FROM {NAME} ";
 
-        query += query.AddCondition("PKT", pkt);
-        query += query.AddCondition("Id", id);
+        query += DbContext.AddCondition(query, "PKT", pkt);
+        query += DbContext.AddCondition(query, "Id", id);
         
-        var result = await DbContext.ReadFromDb(query);
+        var result = await Program.DbContext.ReadFromDb(query);
         var entry = result.Single();
 
-        return Create(entry);
+        return entry;
     }
 
     [HttpGet]
@@ -34,28 +34,13 @@ public class PlayerController : ControllerBase
             $"SELECT * " +
             $"FROM {NAME} ";
 
-        query += query.AddCondition("PKT", pkt);
-        query += query.AddCondition("Name", name);
-        query += query.AddCondition("ToonId", toonId);
+        query += DbContext.AddCondition(query, "PKT", pkt);
+        query += DbContext.AddCondition(query, "Name", name);
+        query += DbContext.AddCondition(query, "ToonId", toonId);
 
-        var result = await DbContext.ReadFromDb(query);
+        var result = await Program.DbContext.ReadFromDb(query);
 
-        return result.Select(entry => Create(entry));
-    }
-
-    private static Player? Create(Dictionary<string, object>? entry)
-    {
-        if (entry == null)
-        {
-            return null;
-        }
-
-        return new Player()
-        {
-            Id = (int)entry["Id"],
-            ToonId = (int)entry["ToonId"],
-            Name = (string)entry["Name"],
-        };
+        return result.Select(entry => (Player)entry!);
     }
 
     //[HttpPost]
