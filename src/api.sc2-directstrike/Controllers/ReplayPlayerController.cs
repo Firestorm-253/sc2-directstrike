@@ -4,18 +4,18 @@ namespace api.sc2_directstrike.Controllers;
 using DTOs;
 
 [ApiController]
-[Route(ROUTE)]
+[Route("{pkt}/" + NAME)]
 public class ReplayPlayerController : ControllerBase
 {
-    const string ROUTE = "replay_players";
+    const string NAME = "replay_players";
 
     [HttpGet("{id}")]
     public async Task<ReplayPlayer?> GetById(int id)
     {
         string query =
             $"SELECT * " +
-            $"FROM {ROUTE} " +
             $"WHERE Id='{id}' ";
+            $"FROM {NAME} ";
 
         var result = await DbContext.ReadFromDb(query);
         var entry = result.Single();
@@ -29,7 +29,7 @@ public class ReplayPlayerController : ControllerBase
     {
         string query =
             $"SELECT * " +
-            $"FROM {ROUTE} ";
+            $"FROM {NAME} ";
 
         query += query.AddCondition("ReplayId", replayId);
         query += query.AddCondition("PlayerId", playerId);
