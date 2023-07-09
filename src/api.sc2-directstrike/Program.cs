@@ -31,13 +31,13 @@ class Program
 
         if (app.Environment.IsProduction())
         {
-            DbContext.Connect("server90.hostfactory.ch", 3306, "db_mysql",
+            DbContext.Connect("server90.hostfactory.ch", 3306, "sc2_directstrike",
                 user: privatData["user"],
                 password: privatData["password"]);
         }
         else if (app.Environment.IsDevelopment())
         {
-            DbContext.Connect("server90.hostfactory.ch", 3306, "testdb",
+            DbContext.Connect("server90.hostfactory.ch", 3306, "sc2_directstrike_test",
                 user: privatData["user"],
                 password: privatData["password"]);
         }
