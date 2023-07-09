@@ -1,5 +1,7 @@
 ﻿namespace api.sc2_directstrike.tests.UnitTests;
 
+using sc2_directstrike.Controllers;
+
 public class DbContextTests
 {
     DbContext dbContext = null!;
@@ -24,5 +26,23 @@ public class DbContextTests
         }
 
         Assert.AreEqual(System.Data.ConnectionState.Open, this.dbContext.Connection!.State);
+    }
+
+    [Test]
+    public void ReadFromDb()
+    {
+        string pkt = "test";
+        string table = $"replays";
+
+        string query = $"SELECT * " +
+                       $"FROM {table} ";
+
+        query += DbContext.AddCondition(query, "PKT", pkt);
+
+        var result = this.dbContext.ReadFromDb(query).GetAwaiter().GetResult();
+        
+        Assert.IsNotNull(result);
+
+        Assert.Greater(result.Count, 0);
     }
 }
