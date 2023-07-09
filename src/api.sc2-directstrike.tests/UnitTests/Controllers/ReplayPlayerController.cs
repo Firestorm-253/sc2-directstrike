@@ -25,4 +25,21 @@ public class ReplayPlayerControllerTests
 
         Assert.IsNotNull(replayPlayer);
     }
+
+    [Test]
+    public void Get()
+    {
+        string pkt = "read_test";
+        int replayId = 0;
+        int playerId = 0;
+
+        var player = this.replayPlayerController.Get(pkt, replayId, null).GetAwaiter().GetResult();
+        Assert.IsNotNull(player);
+
+        player = this.replayPlayerController.Get(pkt, null, playerId).GetAwaiter().GetResult();
+        Assert.IsNotNull(player);
+
+        player = this.replayPlayerController.Get(pkt, replayId, playerId).GetAwaiter().GetResult();
+        Assert.IsNotNull(player);
+    }
 }
