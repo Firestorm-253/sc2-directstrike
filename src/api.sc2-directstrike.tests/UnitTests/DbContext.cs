@@ -31,12 +31,11 @@ public class DbContextTests
     [Test]
     public void ReadFromDb()
     {
-        string pkt = "test";
-        string table = $"replays";
+        string pkt = "read_test";
+        string table = "replays";
 
         string query = $"SELECT * " +
                        $"FROM {table} ";
-
         query += DbContext.AddCondition(query, "PKT", pkt);
 
         var result = this.dbContext.ReadFromDb(query).GetAwaiter().GetResult();
