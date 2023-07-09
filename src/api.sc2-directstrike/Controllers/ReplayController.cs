@@ -16,9 +16,9 @@ public class ReplayController : ControllerBase
             $"SELECT * " +
             $"FROM {NAME} ";
 
-        query += query.AddCondition("PKT", pkt);
+        query += DbContext.AddCondition(query, "PKT", pkt);
 
-        var result = await DbContext.ReadFromDb(query);
+        var result = await Program.DbContext.ReadFromDb(query);
 
         return result.Select(entry => Create(entry));
     }
@@ -30,10 +30,10 @@ public class ReplayController : ControllerBase
             $"SELECT * " +
             $"FROM {NAME} ";
 
-        query += query.AddCondition("PKT", pkt);
-        query += query.AddCondition("Id", id);
+        query += DbContext.AddCondition(query, "PKT", pkt);
+        query += DbContext.AddCondition(query, "Id", id);
 
-        var result = await DbContext.ReadFromDb(query);
+        var result = await Program.DbContext.ReadFromDb(query);
         var entry = result.Single();
         
         return Create(entry);
@@ -56,6 +56,6 @@ public class ReplayController : ControllerBase
     [HttpPost]
     public async Task Post(string pkt, [FromBody] Replay replay)
     {
-        await DbContext.WriteToDb(pkt, NAME, replay);
+        await Program.DbContext.WriteToDb(pkt, NAME, replay);
     }
 }

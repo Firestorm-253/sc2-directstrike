@@ -16,10 +16,10 @@ public class PlayerController : ControllerBase
             $"SELECT * " +
             $"FROM {NAME} ";
 
-        query += query.AddCondition("PKT", pkt);
-        query += query.AddCondition("Id", id);
+        query += DbContext.AddCondition(query, "PKT", pkt);
+        query += DbContext.AddCondition(query, "Id", id);
         
-        var result = await DbContext.ReadFromDb(query);
+        var result = await Program.DbContext.ReadFromDb(query);
         var entry = result.Single();
 
         return Create(entry);
@@ -34,11 +34,11 @@ public class PlayerController : ControllerBase
             $"SELECT * " +
             $"FROM {NAME} ";
 
-        query += query.AddCondition("PKT", pkt);
-        query += query.AddCondition("Name", name);
-        query += query.AddCondition("ToonId", toonId);
+        query += DbContext.AddCondition(query, "PKT", pkt);
+        query += DbContext.AddCondition(query, "Name", name);
+        query += DbContext.AddCondition(query, "ToonId", toonId);
 
-        var result = await DbContext.ReadFromDb(query);
+        var result = await Program.DbContext.ReadFromDb(query);
 
         return result.Select(entry => Create(entry));
     }

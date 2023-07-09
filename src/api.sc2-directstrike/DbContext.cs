@@ -5,11 +5,11 @@ using System.Text;
 
 namespace api.sc2_directstrike;
 
-public static class DbContext
+public class DbContext
 {
-    public static MySqlConnection Connection { get; set; } = null!;
+    public MySqlConnection Connection { get; set; } = null!;
 
-    public static void Connect(string server, int port, string database, string user, string password)
+    public void Connect(string server, int port, string database, string user, string password)
     {
         var connectionStringBuilder = new MySqlConnectionStringBuilder
         {
@@ -19,13 +19,13 @@ public static class DbContext
             { "user", user },
             { "password", password }
         };
-        Connection = new MySqlConnection(connectionStringBuilder.ConnectionString);
-        Connection.Open();
+        this.Connection = new MySqlConnection(connectionStringBuilder.ConnectionString);
+        this.Connection.Open();
     }
 
-    public static async Task<List<Dictionary<string, object>>> ReadFromDb(string query)
+    public async Task<List<Dictionary<string, object>>> ReadFromDb(string query)
     {
-        var command = new MySqlCommand(query, Connection);
+        var command = new MySqlCommand(query, this.Connection);
         var entries = new List<Dictionary<string, object>>();
 
         using (var dataReader = await command.ExecuteReaderAsync())
@@ -50,13 +50,13 @@ public static class DbContext
         return entries;
     }
 
-    public static async Task WriteToDb(string query)
+    public async Task WriteToDb(string query)
     {
-        var command = new MySqlCommand(query, Connection);
+        var command = new MySqlCommand(query, this.Connection);
         await command.ExecuteNonQueryAsync();
     }
 
-    public static async Task WriteToDb(string pkt, string route, Dictionary<string, object> dict)
+    public async Task WriteToDb(string pkt, string route, Dictionary<string, object> dict)
     {
         var names = new StringBuilder("PKT, ");
         var values = new StringBuilder($"'{pkt}', ");
@@ -69,11 +69,11 @@ public static class DbContext
         names.Remove(names.Length - 2, 2);
         values.Remove(values.Length - 2, 2);
 
-        await DbContext.WriteToDb($"INSERT INTO {route} ({names}) " +
-                                  $"VALUES ({values}) ");
+        await this.WriteToDb($"INSERT INTO {route} ({names}) " +
+                             $"VALUES ({values}) ");
     }
 
-    public static string AddCondition(this string query, string name, object? value)
+    public static string AddCondition(string query, string name, object? value)
     {
         if (value == null)
         {
@@ -83,5 +83,4 @@ public static class DbContext
         string connectorString = !query.Contains("WHERE") ? "WHERE" : "AND";
         return $"{connectorString} {name}='{value}' ";
     }
-
 }
