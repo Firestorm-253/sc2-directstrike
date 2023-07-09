@@ -4,17 +4,19 @@ namespace api.sc2_directstrike.Controllers;
 using DTOs;
 
 [ApiController]
-[Route(ROUTE)]
+[Route("{pkt}/" + NAME)]
 public class ReplayController : ControllerBase
 {
-    const string ROUTE = "replays";
+    const string NAME = "replays";
 
     [HttpGet]
-    public async Task<IEnumerable<Replay?>> Get()
+    public async Task<IEnumerable<Replay?>> Get(string pkt)
     {
         string query =
             $"SELECT * " +
-            $"FROM {ROUTE} ";
+            $"FROM {NAME} ";
+
+        query += query.AddCondition("PKT", pkt);
 
         var result = await DbContext.ReadFromDb(query);
 
@@ -22,12 +24,13 @@ public class ReplayController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<Replay?> GetById(int id)
+    public async Task<Replay?> GetById(string pkt, int id)
     {
         string query =
             $"SELECT * " +
-            $"FROM {ROUTE} ";
+            $"FROM {NAME} ";
 
+        query += query.AddCondition("PKT", pkt);
         query += query.AddCondition("Id", id);
 
         var result = await DbContext.ReadFromDb(query);
@@ -51,9 +54,8 @@ public class ReplayController : ControllerBase
     }
 
     [HttpPost]
-    public async Task Post([FromBody] Replay replay)
+    public async Task Post(string pkt, [FromBody] Replay replay)
     {
-        await DbContext.WriteToDb($"INSERT INTO {ROUTE} (Id, GameTime) " +
-                                  $"VALUES ({replay.Id}, '{replay.GameTime:yyyy-dd-MM hh:mm:ss}') ");
+        await DbContext.WriteToDb(pkt, NAME, replay);
     }
 }

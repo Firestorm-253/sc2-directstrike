@@ -1,0 +1,24 @@
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace api.sc2_directstrike.Controllers;
+
+[Route(ROUTE)]
+[ApiController]
+public class PKTController : ControllerBase
+{
+    const string ROUTE = "pkt";
+
+    static readonly Random random = new();
+    static readonly char[] charSet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRTSUFWXYZ".ToCharArray();
+
+    [HttpGet]
+    public string RequestNewPKT()
+    {
+        string pkt = string.Empty;
+        for (int i = 0; i < 24; i++)
+        {
+            pkt += charSet[random.Next(charSet.Length)];
+        }
+        return pkt;
+    }
+}
