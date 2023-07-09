@@ -12,7 +12,7 @@ public class PlayerControllerTests
         this.playerController = new PlayerController();
 
         Program.DbContext = new DbContext();
-        Program.ConnectDb(true);
+        Program.ConnectDb("sc2_directstrike_tests");
     }
 
     [Test]

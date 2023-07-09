@@ -30,7 +30,17 @@ public class Program
         //{
         //});
 
-        ConnectDb(app.Environment.IsDevelopment());
+        string dbName = string.Empty;
+        if (app.Environment.IsProduction())
+        {
+            dbName = "sc2_directstrike";
+        }
+        else if (app.Environment.IsDevelopment())
+        {
+            dbName = "sc2_directstrike_dev";
+        }
+
+        ConnectDb(dbName);
 
         app.UseHttpsRedirection();
 
@@ -39,7 +49,7 @@ public class Program
         app.Run();
     }
 
-    public static void ConnectDb(bool isDevelop, DbContext? context = null)
+    public static void ConnectDb(string dbName, DbContext? context = null)
     {
         if (context == null)
         {
@@ -48,17 +58,8 @@ public class Program
 
         var privatData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText("privatdata.json"))!;
 
-        if (isDevelop)
-        {
-            context.Connect("server90.hostfactory.ch", 3306, "sc2_directstrike_test",
-                user: privatData["user"],
-                password: privatData["password"]);
-        }
-        else
-        {
-            context.Connect("server90.hostfactory.ch", 3306, "sc2_directstrike",
-                user: privatData["user"],
-                password: privatData["password"]);
-        }
+        context.Connect("server90.hostfactory.ch", 3306, dbName,
+            user: privatData["user"],
+            password: privatData["password"]);
     }
 }
