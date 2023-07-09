@@ -2,14 +2,13 @@ using api.sc2_directstrike.Controllers;
 
 namespace api.sc2_directstrike;
 
-class Program
+public class Program
 {
-    public static DbContext DbContext { get; private set; } = null!;
+    public static DbContext DbContext { get; set; } = null!;
 
     static void Main(string[] args)
     {
         Program.DbContext = new DbContext();
-
         RunAPI(args);
     }
 
@@ -31,25 +30,35 @@ class Program
         //{
         //});
 
-        var privatData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText("privatdata.json"))!;
-
-        if (app.Environment.IsProduction())
-        {
-            Program.DbContext.Connect("server90.hostfactory.ch", 3306, "sc2_directstrike",
-                user: privatData["user"],
-                password: privatData["password"]);
-        }
-        else if (app.Environment.IsDevelopment())
-        {
-            Program.DbContext.Connect("server90.hostfactory.ch", 3306, "sc2_directstrike_test",
-                user: privatData["user"],
-                password: privatData["password"]);
-        }
+        ConnectDb(app.Environment.IsDevelopment());
 
         app.UseHttpsRedirection();
 
         app.MapControllers();
 
         app.Run();
+    }
+
+    public static void ConnectDb(bool isDevelop, DbContext? context = null)
+    {
+        if (context == null)
+        {
+            context = Program.DbContext;
+        }
+
+        var privatData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText("privatdata.json"))!;
+
+        if (isDevelop)
+        {
+            context.Connect("server90.hostfactory.ch", 3306, "sc2_directstrike_test",
+                user: privatData["user"],
+                password: privatData["password"]);
+        }
+        else
+        {
+            context.Connect("server90.hostfactory.ch", 3306, "sc2_directstrike",
+                user: privatData["user"],
+                password: privatData["password"]);
+        }
     }
 }

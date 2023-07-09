@@ -4,28 +4,24 @@ using sc2_directstrike.Controllers;
 
 public class DbContextTests
 {
-    DbContext dbContext = null!;
+    DbContext DbContext { get; set; } = null!;
 
     [SetUp]
     public void Setup()
     {
-        dbContext = new DbContext();
-        this.Connect();
+        this.DbContext = new DbContext();
+        Program.ConnectDb(true, this.DbContext);
     }
 
     [Test]
     public void Connect()
     {
-        if (dbContext.Connection == null)
+        if (this.DbContext.Connection == null)
         {
-            var privatData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText("privatdata.json"))!;
-
-            dbContext.Connect("server90.hostfactory.ch", 3306, "sc2_directstrike_test",
-                user: privatData["user"],
-                password: privatData["password"]);
+            Program.ConnectDb(true, this.DbContext);
         }
 
-        Assert.AreEqual(System.Data.ConnectionState.Open, this.dbContext.Connection!.State);
+        Assert.AreEqual(System.Data.ConnectionState.Open, this.DbContext.Connection!.State);
     }
 
     [Test]
@@ -38,7 +34,7 @@ public class DbContextTests
                        $"FROM {table} ";
         query += DbContext.AddCondition(query, "PKT", pkt);
 
-        var result = this.dbContext.ReadFromDb(query).GetAwaiter().GetResult();
+        var result = this.DbContext.ReadFromDb(query).GetAwaiter().GetResult();
         
         Assert.IsNotNull(result);
 
@@ -51,14 +47,14 @@ public class DbContextTests
         string pkt = new PKTController().RequestNewPKT();
         string table = "replays";
 
-        dbContext.WriteToDb(pkt, table, new DTOs.Replay()).Wait();
+        this.DbContext.WriteToDb(pkt, table, new DTOs.Replay()).Wait();
 
 
         string query = $"SELECT * " +
                        $"FROM {table} ";
         query += DbContext.AddCondition(query, "PKT", pkt);
 
-        var result = dbContext.ReadFromDb(query).GetAwaiter().GetResult();
+        var result = this.DbContext.ReadFromDb(query).GetAwaiter().GetResult();
 
         Assert.IsNotNull(result);
 
