@@ -31,15 +31,15 @@ public class PlayerControllerTests
     {
         string pkt = "read_test";
         string name = "A";
-        int toonId = 184085;
+        int inGameId = 184085;
 
         var player = this.playerController.Get(pkt, name, null).GetAwaiter().GetResult();
         Assert.IsNotNull(player);
 
-        player = this.playerController.Get(pkt, null, toonId).GetAwaiter().GetResult();
+        player = this.playerController.Get(pkt, null, inGameId).GetAwaiter().GetResult();
         Assert.IsNotNull(player);
 
-        player = this.playerController.Get(pkt, name, toonId).GetAwaiter().GetResult();
+        player = this.playerController.Get(pkt, name, inGameId).GetAwaiter().GetResult();
         Assert.IsNotNull(player);
     }
 }
