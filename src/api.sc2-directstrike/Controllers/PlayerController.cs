@@ -28,7 +28,7 @@ public class PlayerController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<Player?>> Get(string pkt,
                                                 [FromQuery(Name = "name")] string? name,
-                                                [FromQuery(Name = "toonId")] int? toonId)
+                                                [FromQuery(Name = "inGameId")] int? inGameId)
     {
         string query =
             $"SELECT * " +
@@ -36,7 +36,7 @@ public class PlayerController : ControllerBase
 
         query += DbContext.AddCondition(query, "PKT", pkt);
         query += DbContext.AddCondition(query, "Name", name);
-        query += DbContext.AddCondition(query, "ToonId", toonId);
+        query += DbContext.AddCondition(query, "InGameId", inGameId);
 
         var result = await Program.DbContext.ReadFromDb(query);
 
