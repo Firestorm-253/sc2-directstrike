@@ -7,7 +7,7 @@ using DTOs;
 [Route("{pkt}/" + NAME)]
 public class ReplayPlayerController : ControllerBase
 {
-    const string NAME = "replay_players";
+    public const string NAME = "replay_players";
 
     [HttpGet("{id}")]
     public async Task<ReplayPlayer?> GetById(string pkt, int id)
