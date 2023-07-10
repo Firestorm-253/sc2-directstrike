@@ -57,4 +57,13 @@ public class ReplayPlayerController : ControllerBase
     //public void Delete(int id)
     //{
     //}
+
+    public static async Task<ReplayPlayer> GenerateIncrementedReplay(string pkt, PostReplayPlayer postReplayPlayer)
+    {
+        ReplayPlayer replayPlayer = postReplayPlayer;
+        await Program.DbContext.WriteToDb(pkt, NAME, replayPlayer);
+        
+        var result = await Program.DbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
+        return replayPlayer with { Id = (int)result.Last()["Id"], };
+    }
 }
