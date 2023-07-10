@@ -57,4 +57,19 @@ public class PlayerController : ControllerBase
     //public void Delete(int id)
     //{
     //}
+
+    public static async Task<Player> GenerateIncrementedPlayer(string pkt, PostPlayer postPlayer)
+    {
+        var result = await Program.DbContext.ReadFromDb($"SELECT * FROM {NAME} WHERE PKT='{pkt}' AND InGameId='{postPlayer.InGameId}'")!;
+        if (result.Any())
+        {
+            return result.Single()!;
+        }
+
+        Player player = postPlayer;
+        await Program.DbContext.WriteToDb(pkt, NAME, player);
+
+        result = await Program.DbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
+        return player with { Id = (int)result.Last()["Id"] };
+    }
 }
