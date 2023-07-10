@@ -43,20 +43,6 @@ public class PlayerController : ControllerBase
         return result.Select(entry => (Player)entry!);
     }
 
-    //[HttpPost]
-    //public void Post([FromBody] string value)
-    //{
-    //}
-
-    //[HttpPut("{id}")]
-    //public void Put(int id, [FromBody] string value)
-    //{
-    //}
-
-    //[HttpDelete("{id}")]
-    //public void Delete(int id)
-    //{
-    //}
 
     public static async Task<Player> GenerateIncrementedPlayer(string pkt, PostPlayer postPlayer)
     {

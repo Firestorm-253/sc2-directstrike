@@ -43,20 +43,6 @@ public class ReplayPlayerController : ControllerBase
         return result.Select(entry => (ReplayPlayer)entry!);
     }
 
-    //[HttpPost]
-    //public void Post([FromBody] string value)
-    //{
-    //}
-
-    //[HttpPut("{id}")]
-    //public void Put(int id, [FromBody] string value)
-    //{
-    //}
-
-    //[HttpDelete("{id}")]
-    //public void Delete(int id)
-    //{
-    //}
 
     public static async Task<ReplayPlayer> GenerateIncrementedReplay(string pkt, PostReplayPlayer postReplayPlayer)
     {
