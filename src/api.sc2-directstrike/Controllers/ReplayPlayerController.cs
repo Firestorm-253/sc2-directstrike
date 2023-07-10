@@ -40,7 +40,7 @@ public class ReplayPlayerController : ControllerBase
 
         var result = await Program.DbContext.ReadFromDb(query);
 
-        return result.Select(entry => (ReplayPlayer)entry);
+        return result.Select(entry => (ReplayPlayer)entry!);
     }
 
     //[HttpPost]
