@@ -20,7 +20,7 @@ public class ReplayController : ControllerBase
 
         var result = await Program.DbContext.ReadFromDb(query);
 
-        return result.Select(entry => (Replay)entry);
+        return result.Select(entry => (Replay)entry!);
     }
 
     [HttpGet("{id}")]

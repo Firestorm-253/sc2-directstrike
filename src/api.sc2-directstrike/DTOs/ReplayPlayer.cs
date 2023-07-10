@@ -2,13 +2,13 @@
 
 public record ReplayPlayer
 {
-    public int Id { get; init; }
+    //public int Id { get; init; }
     public int PlayerId { get; init; }
     public int ReplayId { get; init; }
 
-    public string Commander { get; init; } = null!;
     public int Team { get; init; }
     public int Position { get; init; }
+    public string Commander { get; init; } = null!;
 
     public static implicit operator ReplayPlayer?(Dictionary<string, object> entry)
     {
@@ -19,13 +19,13 @@ public record ReplayPlayer
 
         return new ReplayPlayer()
         {
-            Id = (int)entry["Id"],
+            //Id = (int)entry["Id"],
             PlayerId = (int)entry["PlayerId"],
             ReplayId = (int)entry["ReplayId"],
 
-            Commander = (string)entry["Commander"],
             Team = (int)entry["Team"],
             Position = (int)entry["Position"],
+            Commander = (string)entry["Commander"],
         };
     }
 }
