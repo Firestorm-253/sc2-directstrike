@@ -12,6 +12,11 @@ public class PlayerController : ControllerBase
     [HttpGet("{id}")]
     public async Task<Player?> GetById(string pkt, int id)
     {
+        if (pkt.Length != 24)
+        {
+            throw new ArgumentException("ERROR: Invalid PKT length!");
+        }
+
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";
@@ -30,6 +35,11 @@ public class PlayerController : ControllerBase
                                                 [FromQuery(Name = "name")] string? name,
                                                 [FromQuery(Name = "inGameId")] int? inGameId)
     {
+        if (pkt.Length != 24)
+        {
+            throw new ArgumentException("ERROR: Invalid PKT length!");
+        }
+
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";

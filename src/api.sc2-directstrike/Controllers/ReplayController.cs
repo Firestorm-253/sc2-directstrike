@@ -12,6 +12,11 @@ public class ReplayController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<Replay?>> Get(string pkt)
     {
+        if (pkt.Length != 24)
+        {
+            throw new ArgumentException("ERROR: Invalid PKT length!");
+        }
+
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";
@@ -26,6 +31,11 @@ public class ReplayController : ControllerBase
     [HttpGet("{id}")]
     public async Task<Replay?> GetById(string pkt, int id)
     {
+        if (pkt.Length != 24)
+        {
+            throw new ArgumentException("ERROR: Invalid PKT length!");
+        }
+
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";
@@ -48,16 +58,14 @@ public class ReplayController : ControllerBase
         }
 
         Replay replay = await GenerateIncrementedReplay(pkt, postReplay);
-        var replayPlayers = new List<ReplayPlayer>();
 
         foreach (var postReplayPlayer in postReplay.ReplayPlayers)
         {
             Player player = await PlayerController.GenerateIncrementedPlayer(pkt, postReplayPlayer.Player);
             ReplayPlayer replayPlayer = await ReplayPlayerController.GenerateIncrementedReplay(pkt, postReplayPlayer, replay, player);
-
-            replayPlayers.Add(replayPlayer);
         }
     }
+
 
     public static async Task<Replay> GenerateIncrementedReplay(string pkt, PostReplay postReplay)
     {

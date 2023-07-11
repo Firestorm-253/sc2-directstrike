@@ -13,6 +13,11 @@ public class ReplayPlayerController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ReplayPlayer?> GetById(string pkt, int id)
     {
+        if (pkt.Length != 24)
+        {
+            throw new ArgumentException("ERROR: Invalid PKT length!");
+        }
+
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";
@@ -31,6 +36,11 @@ public class ReplayPlayerController : ControllerBase
                                                       [FromQuery(Name = "replayId")] int? replayId,
                                                       [FromQuery(Name = "playerId")] int? playerId)
     {
+        if (pkt.Length != 24)
+        {
+            throw new ArgumentException("ERROR: Invalid PKT length!");
+        }
+
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";

@@ -2,11 +2,11 @@
 
 namespace api.sc2_directstrike.Controllers;
 
-[Route(ROUTE)]
+[Route(NAME)]
 [ApiController]
 public class PKTController : ControllerBase
 {
-    const string ROUTE = "pkt";
+    const string NAME = "pkt";
 
     static readonly Random random = new();
     static readonly char[] charSet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRTSUFWXYZ".ToCharArray();
