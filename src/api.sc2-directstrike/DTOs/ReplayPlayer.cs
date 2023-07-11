@@ -64,9 +64,6 @@ public record PostReplayPlayer
     public uint Team { get; init; }
     public uint Position { get; init; }
 
-    public float RatingBefore { get; init; }
-    public float RatingAfter { get; init; }
-
     public string Commander { get; init; } = null!;
 
 
@@ -75,9 +72,6 @@ public record PostReplayPlayer
         {
             Team = postReplayPlayer.Team,
             Position = postReplayPlayer.Position,
-
-            RatingBefore = postReplayPlayer.RatingBefore,
-            RatingAfter = postReplayPlayer.RatingAfter,
 
             Commander = postReplayPlayer.Commander,
         };
