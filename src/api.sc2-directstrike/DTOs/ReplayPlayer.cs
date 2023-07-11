@@ -10,6 +10,10 @@ public record ReplayPlayer
 
     public uint Team { get; init; }
     public uint Position { get; init; }
+
+    public float RatingBefore { get; init; }
+    public float RatingAfter { get; init; }
+
     public string Commander { get; init; } = null!;
 
 
@@ -22,6 +26,10 @@ public record ReplayPlayer
 
             { "Team", replayPlayer.Team },
             { "Position", replayPlayer.Position },
+
+            { "RatingBefore", replayPlayer.RatingBefore },
+            { "RatingAfter", replayPlayer.RatingAfter },
+
             { "Commander", replayPlayer.Commander },
         };
 
@@ -40,6 +48,10 @@ public record ReplayPlayer
 
             Team = (uint)entry["Team"],
             Position = (uint)entry["Position"],
+
+            RatingBefore = (float)entry["RatingBefore"],
+            RatingAfter = (float)entry["RatingAfter"],
+
             Commander = (string)entry["Commander"],
         };
     }
@@ -51,6 +63,7 @@ public record PostReplayPlayer
 
     public uint Team { get; init; }
     public uint Position { get; init; }
+
     public string Commander { get; init; } = null!;
 
 
@@ -59,6 +72,7 @@ public record PostReplayPlayer
         {
             Team = postReplayPlayer.Team,
             Position = postReplayPlayer.Position,
+
             Commander = postReplayPlayer.Commander,
         };
 }
