@@ -1,6 +1,6 @@
-using api.sc2_directstrike.Controllers;
-
 namespace api.sc2_directstrike;
+using Controllers;
+
 
 public class Program
 {
