@@ -50,6 +50,6 @@ public class ReplayPlayerController : ControllerBase
         await Program.DbContext.WriteToDb(pkt, NAME, replayPlayer);
         
         var result = await Program.DbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
-        return replayPlayer with { Id = (int)result.Last()["Id"], };
+        return replayPlayer with { Id = (uint)result.Last()["Id"], };
     }
 }
