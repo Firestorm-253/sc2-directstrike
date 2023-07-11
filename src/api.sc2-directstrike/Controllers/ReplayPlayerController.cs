@@ -7,7 +7,7 @@ using DTOs;
 [Route("{pkt}/" + NAME)]
 public class ReplayPlayerController : ControllerBase
 {
-    const string NAME = "replay_players";
+    public const string NAME = "replay_players";
 
     [HttpGet("{id}")]
     public async Task<ReplayPlayer?> GetById(string pkt, int id)
@@ -40,21 +40,16 @@ public class ReplayPlayerController : ControllerBase
 
         var result = await Program.DbContext.ReadFromDb(query);
 
-        return result.Select(entry => (ReplayPlayer)entry);
+        return result.Select(entry => (ReplayPlayer)entry!);
     }
 
-    //[HttpPost]
-    //public void Post([FromBody] string value)
-    //{
-    //}
 
-    //[HttpPut("{id}")]
-    //public void Put(int id, [FromBody] string value)
-    //{
-    //}
-
-    //[HttpDelete("{id}")]
-    //public void Delete(int id)
-    //{
-    //}
+    public static async Task<ReplayPlayer> GenerateIncrementedReplay(string pkt, PostReplayPlayer postReplayPlayer)
+    {
+        ReplayPlayer replayPlayer = postReplayPlayer;
+        await Program.DbContext.WriteToDb(pkt, NAME, replayPlayer);
+        
+        var result = await Program.DbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
+        return replayPlayer with { Id = (int)result.Last()["Id"], };
+    }
 }

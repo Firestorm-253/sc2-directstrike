@@ -7,7 +7,7 @@ using DTOs;
 [Route("{pkt}/" + NAME)]
 public class ReplayController : ControllerBase
 {
-    const string NAME = "replays";
+    public const string NAME = "replays";
 
     [HttpGet]
     public async Task<IEnumerable<Replay?>> Get(string pkt)
@@ -20,7 +20,7 @@ public class ReplayController : ControllerBase
 
         var result = await Program.DbContext.ReadFromDb(query);
 
-        return result.Select(entry => (Replay)entry);
+        return result.Select(entry => (Replay)entry!);
     }
 
     [HttpGet("{id}")]
@@ -40,8 +40,44 @@ public class ReplayController : ControllerBase
     }
 
     [HttpPost]
-    public async Task Post(string pkt, [FromBody] Replay replay)
+    public async Task Post(string pkt, [FromBody] PostReplay postReplay)
     {
+        if (pkt.Length != 24)
+        {
+            throw new ArgumentException("ERROR: Invalid PKT length!");
+        }
+
+        Replay replay = await GenerateIncrementedReplay(pkt, postReplay);
+        var replayPlayers = new List<ReplayPlayer>();
+
+        foreach (var postReplayPlayer in postReplay.ReplayPlayers)
+        {
+            Player player = await PlayerController.GenerateIncrementedPlayer(pkt, postReplayPlayer.Player);
+            ReplayPlayer replayPlayer = await ReplayPlayerController.GenerateIncrementedReplay(pkt, postReplayPlayer);
+
+            replayPlayer = replayPlayer with
+            {
+                ReplayId = replay.Id,
+                PlayerId = player.Id,
+            };
+            await Program.DbContext.UpdateDb(pkt, ReplayPlayerController.NAME, replayPlayer);
+
+            replayPlayers.Add(replayPlayer);
+        }
+
+        replay = replay with
+        {
+            ReplayPlayersIds = replayPlayers.Select(rp => rp.Id).ToArray(),
+        };
+        await Program.DbContext.UpdateDb(pkt, NAME, replay);
+    }
+
+    public static async Task<Replay> GenerateIncrementedReplay(string pkt, PostReplay postReplay)
+    {
+        Replay replay = postReplay;
         await Program.DbContext.WriteToDb(pkt, NAME, replay);
+
+        var result = await Program.DbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
+        return replay with { Id = (int)result.Last()["Id"] };
     }
 }

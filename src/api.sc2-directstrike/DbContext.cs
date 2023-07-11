@@ -1,9 +1,10 @@
-﻿using api.sc2_directstrike.DTOs;
-using Microsoft.AspNetCore.Routing;
+﻿using Microsoft.AspNetCore.Routing;
 using MySqlConnector;
+using System.Collections.Generic;
 using System.Text;
 
 namespace api.sc2_directstrike;
+using DTOs;
 
 public class DbContext
 {
@@ -71,6 +72,28 @@ public class DbContext
 
         await this.WriteToDb($"INSERT INTO {route} ({names}) " +
                              $"VALUES ({values}) ");
+    }
+
+    public async Task UpdateDb(string pkt, string route, Dictionary<string, object> entry)
+    {
+        var entries = new StringBuilder();
+        var conditions = $"WHERE PKT='{pkt}' AND Id='{entry["Id"]}'";
+
+        for (int i = 1; i < entry.Count; i++)
+        {
+            var name = entry.Keys.ElementAt(i);
+            var value = entry.Values.ElementAt(i);
+            entries.Append($"{name}='{value}'");
+
+            if (i < entry.Count - 1)
+            {
+                entries.Append(", ");
+            }
+        }
+
+        await this.WriteToDb($"UPDATE {route} " +
+                             $"SET {entries} " +
+                             $"{conditions}");
     }
 
     public static string AddCondition(string query, string name, object? value)
