@@ -2,6 +2,7 @@
 
 namespace api.sc2_directstrike.Controllers;
 using DTOs;
+using System.Numerics;
 
 [ApiController]
 [Route("{pkt}/" + NAME)]
@@ -44,9 +45,13 @@ public class ReplayPlayerController : ControllerBase
     }
 
 
-    public static async Task<ReplayPlayer> GenerateIncrementedReplay(string pkt, PostReplayPlayer postReplayPlayer)
+    public static async Task<ReplayPlayer> GenerateIncrementedReplay(string pkt, PostReplayPlayer postReplayPlayer, Replay replay, Player player)
     {
-        ReplayPlayer replayPlayer = postReplayPlayer;
+        ReplayPlayer replayPlayer = ((ReplayPlayer)postReplayPlayer) with
+        {
+            ReplayId = replay.Id,
+            PlayerId = player.Id,
+        };
         await Program.DbContext.WriteToDb(pkt, NAME, replayPlayer);
         
         var result = await Program.DbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");

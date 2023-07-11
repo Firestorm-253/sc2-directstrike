@@ -64,6 +64,11 @@ public class DbContext
 
         foreach (var keyValuePair in dict)
         {
+            if (keyValuePair.Key == "Id")
+            {
+                continue;
+            }
+
             names.Append($"{keyValuePair.Key}, ");
             values.Append($"'{keyValuePair.Value}', ");
         }
