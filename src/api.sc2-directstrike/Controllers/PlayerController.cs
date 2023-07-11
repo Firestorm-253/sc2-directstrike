@@ -56,6 +56,6 @@ public class PlayerController : ControllerBase
         await Program.DbContext.WriteToDb(pkt, NAME, player);
 
         result = await Program.DbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
-        return player with { Id = (int)result.Last()["Id"] };
+        return player with { Id = (uint)result.Last()["Id"] };
     }
 }
