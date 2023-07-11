@@ -64,12 +64,6 @@ public class ReplayController : ControllerBase
 
             replayPlayers.Add(replayPlayer);
         }
-
-        replay = replay with
-        {
-            ReplayPlayersIds = replayPlayers.Select(rp => rp.Id).ToArray(),
-        };
-        await Program.DbContext.UpdateDb(pkt, NAME, replay);
     }
 
     public static async Task<Replay> GenerateIncrementedReplay(string pkt, PostReplay postReplay)
@@ -78,6 +72,6 @@ public class ReplayController : ControllerBase
         await Program.DbContext.WriteToDb(pkt, NAME, replay);
 
         var result = await Program.DbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
-        return replay with { Id = (int)result.Last()["Id"] };
+        return replay with { Id = (uint)result.Last()["Id"] };
     }
 }

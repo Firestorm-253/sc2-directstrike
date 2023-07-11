@@ -2,8 +2,8 @@
 
 public record Player
 {
-    public int Id { get; init; }
-    public int InGameId { get; init; }
+    public uint Id { get; init; }
+    public uint InGameId { get; init; }
     public string Name { get; init; } = null!;
 
 
@@ -24,8 +24,8 @@ public record Player
 
         return new Player()
         {
-            Id = (int)entry["Id"],
-            InGameId = (int)entry["InGameId"],
+            Id = (uint)entry["Id"],
+            InGameId = (uint)entry["InGameId"],
             Name = (string)entry["Name"],
         };
     }
@@ -33,7 +33,7 @@ public record Player
 
 public record PostPlayer
 {
-    public int InGameId { get; init; }
+    public uint InGameId { get; init; }
     public string Name { get; init; } = null!;
 
 
