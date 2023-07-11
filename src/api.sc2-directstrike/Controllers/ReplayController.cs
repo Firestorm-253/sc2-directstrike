@@ -64,12 +64,6 @@ public class ReplayController : ControllerBase
 
             replayPlayers.Add(replayPlayer);
         }
-
-        replay = replay with
-        {
-            ReplayPlayersIds = replayPlayers.Select(rp => rp.Id).ToArray(),
-        };
-        await Program.DbContext.UpdateDb(pkt, NAME, replay);
     }
 
     public static async Task<Replay> GenerateIncrementedReplay(string pkt, PostReplay postReplay)

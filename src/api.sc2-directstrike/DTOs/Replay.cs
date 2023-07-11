@@ -6,7 +6,6 @@ public record Replay
 {
     public uint Id { get; init; }
     public DateTime GameTime { get; init; }
-    public int[] ReplayPlayersIds { get; init; } = null!;
 
 
     public static implicit operator Dictionary<string, object>(Replay replay)
@@ -14,7 +13,6 @@ public record Replay
         {
             { "Id", replay.Id },
             { "GameTime", replay.GameTime.ToString("yyyy-dd-MM hh:mm:ss") },
-            { "ReplayPlayersIds", JsonSerializer.Serialize(replay.ReplayPlayersIds, new JsonSerializerOptions() { WriteIndented = false}) },
         };
 
     public static implicit operator Replay? (Dictionary<string, object> dict)
@@ -27,7 +25,6 @@ public record Replay
         return new Replay()
         {
             GameTime = (DateTime)dict["GameTime"],
-            ReplayPlayersIds = JsonSerializer.Deserialize<int[]>((string)dict["ReplayPlayersIds"])!,
         };
     }
 }
@@ -42,6 +39,5 @@ public record PostReplay
         => new()
         {
             GameTime = postReplay.GameTime,
-            ReplayPlayersIds = new int[0]
         };
 }
