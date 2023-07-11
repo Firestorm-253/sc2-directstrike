@@ -53,14 +53,7 @@ public class ReplayController : ControllerBase
         foreach (var postReplayPlayer in postReplay.ReplayPlayers)
         {
             Player player = await PlayerController.GenerateIncrementedPlayer(pkt, postReplayPlayer.Player);
-            ReplayPlayer replayPlayer = await ReplayPlayerController.GenerateIncrementedReplay(pkt, postReplayPlayer);
-
-            replayPlayer = replayPlayer with
-            {
-                ReplayId = replay.Id,
-                PlayerId = player.Id,
-            };
-            await Program.DbContext.UpdateDb(pkt, ReplayPlayerController.NAME, replayPlayer);
+            ReplayPlayer replayPlayer = await ReplayPlayerController.GenerateIncrementedReplay(pkt, postReplayPlayer, replay, player);
 
             replayPlayers.Add(replayPlayer);
         }
