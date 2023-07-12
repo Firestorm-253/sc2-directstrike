@@ -9,6 +9,13 @@ public class PlayerController : ControllerBase
 {
     public const string NAME = "players";
 
+    private readonly IServiceProvider serviceProvider;
+
+    public PlayerController(IServiceProvider serviceProvider)
+    {
+        this.serviceProvider = serviceProvider;
+    }
+
     [HttpGet("{id}")]
     public async Task<Player?> GetById(string pkt, int id)
     {
@@ -17,6 +24,9 @@ public class PlayerController : ControllerBase
             throw new ArgumentException("ERROR: Invalid PKT length!");
         }
 
+        using var scope = this.serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";
@@ -24,7 +34,7 @@ public class PlayerController : ControllerBase
         query += DbContext.AddCondition(query, "PKT", pkt);
         query += DbContext.AddCondition(query, "Id", id);
         
-        var result = await Program.DbContext.ReadFromDb(query);
+        var result = await dbContext.ReadFromDb(query);
         var entry = result.SingleOrDefault();
 
         if (entry == null)
@@ -44,6 +54,9 @@ public class PlayerController : ControllerBase
             throw new ArgumentException("ERROR: Invalid PKT length!");
         }
 
+        using var scope = this.serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";
@@ -52,24 +65,24 @@ public class PlayerController : ControllerBase
         query += DbContext.AddCondition(query, "Name", name);
         query += DbContext.AddCondition(query, "InGameId", inGameId);
 
-        var result = await Program.DbContext.ReadFromDb(query);
+        var result = await dbContext.ReadFromDb(query);
 
         return result.Select(entry => (Player)entry!);
     }
 
 
-    public static async Task<Player> GenerateIncrementedPlayer(string pkt, PostPlayer postPlayer)
+    public static async Task<Player> GenerateIncrementedPlayer(string pkt, PostPlayer postPlayer, DbContext dbContext)
     {
-        var result = await Program.DbContext.ReadFromDb($"SELECT * FROM {NAME} WHERE PKT='{pkt}' AND InGameId='{postPlayer.InGameId}'")!;
+        var result = await dbContext.ReadFromDb($"SELECT * FROM {NAME} WHERE PKT='{pkt}' AND InGameId='{postPlayer.InGameId}'")!;
         if (result.Any())
         {
             return result.Single()!;
         }
 
         Player player = postPlayer;
-        await Program.DbContext.WriteToDb(pkt, NAME, player);
+        await dbContext.WriteToDb(pkt, NAME, player);
 
-        result = await Program.DbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
+        result = await dbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
         return player with { Id = (uint)result.Last()["Id"] };
     }
 }

@@ -1,14 +1,11 @@
 namespace api.sc2_directstrike;
 using Controllers;
-
+using Services;
 
 public class Program
 {
-    public static DbContext DbContext { get; set; } = null!;
-
     static void Main(string[] args)
     {
-        Program.DbContext = new DbContext();
         RunAPI(args);
     }
 
@@ -21,6 +18,8 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
+        builder.Services.AddSingleton<DbContext>();
+
         var app = builder.Build();
 
         app.UseSwagger();
@@ -29,6 +28,22 @@ public class Program
         //app.UseEndpoints(endpoints =>
         //{
         //});
+
+        ConnectDb(app);
+
+        app.UseHttpsRedirection();
+
+        app.MapControllers();
+
+        app.Run();
+    }
+
+    public static void ConnectDb(WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
+        var privatData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText("privatdata.json"))!;
 
         string dbName = string.Empty;
         if (app.Environment.IsProduction())
@@ -40,25 +55,7 @@ public class Program
             dbName = "sc2_directstrike_dev";
         }
 
-        ConnectDb(dbName);
-
-        app.UseHttpsRedirection();
-
-        app.MapControllers();
-
-        app.Run();
-    }
-
-    public static void ConnectDb(string dbName, DbContext? context = null)
-    {
-        if (context == null)
-        {
-            context = Program.DbContext;
-        }
-
-        var privatData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText("privatdata.json"))!;
-
-        context.Connect("server90.hostfactory.ch", 3306, dbName,
+        dbContext.Connect("server90.hostfactory.ch", 3306, dbName,
             user: privatData["user"],
             password: privatData["password"]);
     }

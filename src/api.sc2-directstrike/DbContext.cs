@@ -10,6 +10,13 @@ public class DbContext
 {
     public MySqlConnection Connection { get; set; } = null!;
 
+    private readonly IServiceProvider serviceProvider;
+
+    public DbContext(IServiceProvider serviceProvider)
+    {
+        this.serviceProvider = serviceProvider;
+    }
+
     public void Connect(string server, int port, string database, string user, string password)
     {
         var connectionStringBuilder = new MySqlConnectionStringBuilder

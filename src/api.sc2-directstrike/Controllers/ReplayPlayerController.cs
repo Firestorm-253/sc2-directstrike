@@ -9,6 +9,13 @@ using System.Numerics;
 public class ReplayPlayerController : ControllerBase
 {
     public const string NAME = "replay_players";
+    
+    private readonly IServiceProvider serviceProvider;
+
+    public ReplayPlayerController(IServiceProvider serviceProvider)
+    {
+        this.serviceProvider = serviceProvider;
+    }
 
     [HttpGet("{id}")]
     public async Task<ReplayPlayer?> GetById(string pkt, int id)
@@ -18,6 +25,9 @@ public class ReplayPlayerController : ControllerBase
             throw new ArgumentException("ERROR: Invalid PKT length!");
         }
 
+        using var scope = this.serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";
@@ -25,7 +35,7 @@ public class ReplayPlayerController : ControllerBase
         query += DbContext.AddCondition(query, "PKT", pkt);
         query += DbContext.AddCondition(query, "Id", id);
 
-        var result = await Program.DbContext.ReadFromDb(query);
+        var result = await dbContext.ReadFromDb(query);
         var entry = result.SingleOrDefault();
 
         if (entry == null)
@@ -45,6 +55,9 @@ public class ReplayPlayerController : ControllerBase
             throw new ArgumentException("ERROR: Invalid PKT length!");
         }
 
+        using var scope = this.serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
         string query =
             $"SELECT * " +
             $"FROM {NAME} ";
@@ -53,22 +66,22 @@ public class ReplayPlayerController : ControllerBase
         query += DbContext.AddCondition(query, "ReplayId", replayId);
         query += DbContext.AddCondition(query, "PlayerId", playerId);
 
-        var result = await Program.DbContext.ReadFromDb(query);
+        var result = await dbContext.ReadFromDb(query);
 
         return result.Select(entry => (ReplayPlayer)entry!);
     }
 
 
-    public static async Task<ReplayPlayer> GenerateIncrementedReplay(string pkt, PostReplayPlayer postReplayPlayer, Replay replay, Player player)
+    public static async Task<ReplayPlayer> GenerateIncrementedReplay(string pkt, PostReplayPlayer postReplayPlayer, Replay replay, Player player, DbContext dbContext)
     {
         ReplayPlayer replayPlayer = ((ReplayPlayer)postReplayPlayer) with
         {
             ReplayId = replay.Id,
             PlayerId = player.Id,
         };
-        await Program.DbContext.WriteToDb(pkt, NAME, replayPlayer);
+        await dbContext.WriteToDb(pkt, NAME, replayPlayer);
         
-        var result = await Program.DbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
+        var result = await dbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
         return replayPlayer with { Id = (uint)result.Last()["Id"], };
     }
 }
