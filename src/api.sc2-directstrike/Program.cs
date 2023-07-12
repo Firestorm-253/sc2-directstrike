@@ -1,6 +1,7 @@
 namespace api.sc2_directstrike;
 using Contexts;
 using Controllers;
+using Services;
 
 public class Program
 {
@@ -23,6 +24,8 @@ public class Program
         builder.Services.AddTransient<ReplayContext>();
         builder.Services.AddTransient<ReplayPlayerContext>();
         builder.Services.AddTransient<PlayerContext>();
+
+        builder.Services.AddTransient<RatingService>();
 
         var app = builder.Build();
 
