@@ -64,6 +64,50 @@ public class PlayerController : ControllerBase
         return result.Select(entry => (Player)entry!);
     }
 
+    [HttpDelete]
+    public async Task Delete(string pkt,
+                            [FromQuery(Name = "name")] string? name = null,
+                            [FromQuery(Name = "inGameId")] ulong? inGameId = null)
+    {
+        if (pkt.Length != 24)
+        {
+            throw new ArgumentException("ERROR: Invalid PKT length!");
+        }
+
+        using var scope = this.serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
+        string query =
+            $"DELETE " +
+            $"FROM {PlayerContext.Table} " +
+            $"WHERE PKT = '{pkt}' ";
+
+        if (name != null)
+        {
+            query += $"AND Name = '{name}' ";
+        }
+        if (inGameId != null)
+        {
+            query += $"AND InGameId = '{inGameId}' ";
+        }
+
+        await dbContext.WriteToDb(query);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task Delete(string pkt, ulong id)
+    {
+        if (pkt.Length != 24)
+        {
+            throw new ArgumentException("ERROR: Invalid PKT length!");
+        }
+
+        using var scope = this.serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
+        await dbContext.WriteToDb($"DELETE FROM {PlayerContext.Table} WHERE Id = '{id}' ");
+    }
+
 
     public static async Task<Player> GenerateIncrementedPlayer(string pkt, PostPlayer postPlayer, DbContext dbContext)
     {
