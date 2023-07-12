@@ -66,6 +66,50 @@ public class ReplayPlayerController : ControllerBase
         return result.Select(entry => (ReplayPlayer)entry!);
     }
 
+    [HttpDelete]
+    public async Task Delete(string pkt,
+                            [FromQuery(Name = "replayId")] ulong? replayId = null,
+                            [FromQuery(Name = "playerId")] ulong? playerId = null)
+    {
+        if (pkt.Length != 24)
+        {
+            throw new ArgumentException("ERROR: Invalid PKT length!");
+        }
+
+        using var scope = this.serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
+        string query =
+            $"DELETE " +
+            $"FROM {ReplayPlayerContext.Table} " +
+            $"WHERE PKT = '{pkt}' ";
+
+        if (replayId != null)
+        {
+            query += $"AND ReplayId = '{replayId}' ";
+        }
+        if (playerId != null)
+        {
+            query += $"AND PlayerId = '{playerId}' ";
+        }
+
+        await dbContext.WriteToDb(query);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task Delete(string pkt, ulong id)
+    {
+        if (pkt.Length != 24)
+        {
+            throw new ArgumentException("ERROR: Invalid PKT length!");
+        }
+
+        using var scope = this.serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
+        await dbContext.WriteToDb($"DELETE FROM {ReplayContext.Table} WHERE Id = '{id}' ");
+    }
+
 
     public static async Task<ReplayPlayer> GenerateIncrementedReplay(string pkt, PostReplayPlayer postReplayPlayer, Replay replay, Player player, DbContext dbContext)
     {
