@@ -2,6 +2,7 @@
 
 namespace api.sc2_directstrike.Controllers;
 using DTOs;
+using Contexts;
 
 [ApiController]
 [Route("{pkt}/" + NAME)]
@@ -25,16 +26,9 @@ public class PlayerController : ControllerBase
         }
 
         using var scope = this.serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        var playerContext = scope.ServiceProvider.GetRequiredService<PlayerContext>();
 
-        string query =
-            $"SELECT * " +
-            $"FROM {NAME} ";
-
-        query += DbContext.AddCondition(query, "PKT", pkt);
-        query += DbContext.AddCondition(query, "Id", id);
-        
-        var result = await dbContext.ReadFromDb(query);
+        var result = await playerContext.Get(pkt, conditions: new string[] { $"Id = '{id}'" }, "*");
         var entry = result.SingleOrDefault();
 
         if (entry == null)
@@ -55,17 +49,19 @@ public class PlayerController : ControllerBase
         }
 
         using var scope = this.serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        var playerContext = scope.ServiceProvider.GetRequiredService<PlayerContext>();
 
-        string query =
-            $"SELECT * " +
-            $"FROM {NAME} ";
+        var conditions = new List<string>();
+        if (name != null)
+        {
+            conditions.Add($"Name = '{name}'");
+        }
+        if (inGameId != null)
+        {
+            conditions.Add($"InGameId = '{inGameId}'");
+        }
 
-        query += DbContext.AddCondition(query, "PKT", pkt);
-        query += DbContext.AddCondition(query, "Name", name);
-        query += DbContext.AddCondition(query, "InGameId", inGameId);
-
-        var result = await dbContext.ReadFromDb(query);
+        var result = await playerContext.Get(pkt, conditions, "*");
 
         return result.Select(entry => (Player)entry!);
     }
