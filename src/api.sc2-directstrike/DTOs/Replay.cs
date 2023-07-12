@@ -24,6 +24,7 @@ public record Replay
 
         return new Replay()
         {
+            Id = (uint)dict["Id"],
             GameTime = (DateTime)dict["GameTime"],
         };
     }
