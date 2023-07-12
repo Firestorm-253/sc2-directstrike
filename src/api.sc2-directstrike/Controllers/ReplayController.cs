@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace api.sc2_directstrike.Controllers;
 using DTOs;
+using Contexts;
 
 [ApiController]
 [Route("{pkt}/" + NAME)]
@@ -25,17 +26,9 @@ public class ReplayController : ControllerBase
         }
 
         using var scope = this.serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        var replayContext = scope.ServiceProvider.GetRequiredService<ReplayContext>();
 
-        string query =
-            $"SELECT * " +
-            $"FROM {NAME} ";
-
-        query += DbContext.AddCondition(query, "PKT", pkt);
-
-        var result = await dbContext.ReadFromDb(query);
-
-        return result.Select(entry => (Replay)entry!);
+        return await replayContext.Get(pkt, conditions: Array.Empty<string>(), selects: "*");
     }
 
     [HttpGet("{id}")]
@@ -47,16 +40,9 @@ public class ReplayController : ControllerBase
         }
 
         using var scope = serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        var replayContext = scope.ServiceProvider.GetRequiredService<ReplayContext>();
 
-        string query =
-            $"SELECT * " +
-            $"FROM {NAME} ";
-
-        query += DbContext.AddCondition(query, "PKT", pkt);
-        query += DbContext.AddCondition(query, "Id", id);
-
-        var result = await dbContext.ReadFromDb(query);
+        var result = await replayContext.Get(pkt, conditions: new string[] { $"Id = '{id}'" }, "*");
         var entry = result.SingleOrDefault();
 
         if (entry == null)
