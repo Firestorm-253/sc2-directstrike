@@ -33,27 +33,26 @@ public class DbContext
 
     public async Task<List<Dictionary<string, object>>> ReadFromDb(string query)
     {
-        var command = new MySqlCommand(query, Connection);
+        using var command = new MySqlCommand(query, this.Connection);
+
         var entries = new List<Dictionary<string, object>>();
 
-        using (var dataReader = await command.ExecuteReaderAsync())
+        using var dataReader = await command.ExecuteReaderAsync();
+        var columns = await dataReader.GetColumnSchemaAsync();
+
+        while (await dataReader.ReadAsync())
         {
-            var columns = await dataReader.GetColumnSchemaAsync();
+            var values = new object[dataReader.FieldCount];
+            dataReader.GetValues(values);
 
-            while (await dataReader.ReadAsync())
+            var entry = new Dictionary<string, object>();
+            for (int i = 0; i < values.Length; i++)
             {
-                var values = new object[dataReader.FieldCount];
-                dataReader.GetValues(values);
-
-                var entry = new Dictionary<string, object>();
-                for (int i = 0; i < values.Length; i++)
-                {
-                    entry.Add(columns[i].ColumnName, values[i]);
-                }
-
-                entries.Add(entry);
+                entry.Add(columns[i].ColumnName, values[i]);
             }
-        };
+
+            entries.Add(entry);
+        }
 
         return entries;
     }
