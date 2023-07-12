@@ -2,8 +2,7 @@
 
 namespace api.sc2_directstrike.Services;
 using DTOs;
-using Controllers;
-using api.sc2_directstrike.Contexts;
+using Contexts;
 
 public class RatingService
 {
@@ -51,7 +50,7 @@ public class RatingService
         // ToDo Update all elements in 1 command?
         foreach (var replayPlayer in replayPlayers)
         {
-            await dbContext.UpdateDb(pkt, ReplayPlayerController.NAME, replayPlayer);
+            await dbContext.UpdateDb(pkt, ReplayPlayerContext.Table, replayPlayer);
         }
     }
 
