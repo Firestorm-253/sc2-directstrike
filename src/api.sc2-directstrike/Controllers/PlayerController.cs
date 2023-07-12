@@ -5,11 +5,9 @@ using DTOs;
 using Contexts;
 
 [ApiController]
-[Route("{pkt}/" + NAME)]
+[Route("{pkt}/" + PlayerContext.Table)]
 public class PlayerController : ControllerBase
 {
-    public const string NAME = "players";
-
     private readonly IServiceProvider serviceProvider;
 
     public PlayerController(IServiceProvider serviceProvider)
@@ -69,14 +67,14 @@ public class PlayerController : ControllerBase
 
     public static async Task<Player> GenerateIncrementedPlayer(string pkt, PostPlayer postPlayer, DbContext dbContext)
     {
-        var result = await dbContext.ReadFromDb($"SELECT * FROM {NAME} WHERE PKT='{pkt}' AND InGameId='{postPlayer.InGameId}'")!;
+        var result = await dbContext.ReadFromDb($"SELECT * FROM {PlayerContext.Table} WHERE PKT='{pkt}' AND InGameId='{postPlayer.InGameId}'")!;
         if (result.Any())
         {
             return result.Single()!;
         }
 
         Player player = postPlayer;
-        ulong id = await dbContext.WriteToDb(pkt, NAME, player);
+        ulong id = await dbContext.WriteToDb(pkt, PlayerContext.Table, player);
 
         return player with { Id = id };
     }

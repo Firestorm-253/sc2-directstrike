@@ -7,6 +7,8 @@ using Controllers;
 
 public class ReplayContext
 {
+    public const string Table = "replays";
+
     private readonly IServiceProvider serviceProvider;
 
     public ReplayContext(IServiceProvider serviceProvider)
@@ -21,7 +23,7 @@ public class ReplayContext
 
         string query =
             $"SELECT {string.Join(", ", selects)} " +
-            $"FROM replays " +
+            $"FROM {Table} " +
             $"WHERE PKT = '{pkt}' ";
 
         if (conditions.Any())

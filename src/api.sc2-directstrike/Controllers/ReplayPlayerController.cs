@@ -7,11 +7,9 @@ using DTOs;
 using Contexts;
 
 [ApiController]
-[Route("{pkt}/" + NAME)]
+[Route("{pkt}/" + ReplayPlayerContext.Table)]
 public class ReplayPlayerController : ControllerBase
 {
-    public const string NAME = "replay_players";
-    
     private readonly IServiceProvider serviceProvider;
 
     public ReplayPlayerController(IServiceProvider serviceProvider)
@@ -76,7 +74,7 @@ public class ReplayPlayerController : ControllerBase
             ReplayId = replay.Id,
             PlayerId = player.Id,
         };
-        ulong id = await dbContext.WriteToDb(pkt, NAME, replayPlayer);
+        ulong id = await dbContext.WriteToDb(pkt, ReplayPlayerContext.Table, replayPlayer);
         
         return replayPlayer with { Id = id };
     }

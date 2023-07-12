@@ -5,11 +5,9 @@ using DTOs;
 using Contexts;
 
 [ApiController]
-[Route("{pkt}/" + NAME)]
+[Route("{pkt}/" + ReplayContext.Table)]
 public class ReplayController : ControllerBase
 {
-    public const string NAME = "replays";
-
     private readonly IServiceProvider serviceProvider;
     
     public ReplayController(IServiceProvider serviceProvider)
@@ -79,7 +77,7 @@ public class ReplayController : ControllerBase
     public static async Task<Replay> GenerateIncrementedReplay(string pkt, PostReplay postReplay, DbContext dbContext)
     {
         Replay replay = postReplay;
-        ulong id = await dbContext.WriteToDb(pkt, NAME, replay);
+        ulong id = await dbContext.WriteToDb(pkt, ReplayContext.Table, replay);
 
         return replay with { Id = id };
     }
