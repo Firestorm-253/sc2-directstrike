@@ -1,7 +1,6 @@
 namespace api.sc2_directstrike;
 using Contexts;
 using Controllers;
-using Services;
 
 public class Program
 {
