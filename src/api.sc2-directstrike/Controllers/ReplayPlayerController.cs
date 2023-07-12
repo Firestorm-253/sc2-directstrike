@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Numerics;
+using System.Xml.Linq;
 
 namespace api.sc2_directstrike.Controllers;
 using DTOs;
-using System.Numerics;
+using Contexts;
 
 [ApiController]
 [Route("{pkt}/" + NAME)]
@@ -26,25 +28,22 @@ public class ReplayPlayerController : ControllerBase
         }
 
         using var scope = this.serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        var replayPlayerContext = scope.ServiceProvider.GetRequiredService<ReplayPlayerContext>();
 
-        string query =
-            $"SELECT * " +
-            $"FROM {NAME} ";
+        var result = await replayPlayerContext.Get(pkt, conditions: new string[] { $"Id = '{id}'" }, "*");
+        var entry = result.SingleOrDefault();
 
-        query += DbContext.AddCondition(query, "PKT", pkt);
-        query += DbContext.AddCondition(query, "Id", id);
-
-        var result = await dbContext.ReadFromDb(query);
-        var entry = result.Single();
-
+        if (entry == null)
+        {
+            return null;
+        }
         return entry;
     }
 
     [HttpGet]
-    public async Task<IEnumerable<ReplayPlayer?>> Get(string pkt,
-                                                      [FromQuery(Name = "replayId")] int? replayId,
-                                                      [FromQuery(Name = "playerId")] int? playerId)
+    public async Task<IEnumerable<ReplayPlayer>> Get(string pkt,
+                                                     [FromQuery(Name = "replayId")] int? replayId = null,
+                                                     [FromQuery(Name = "playerId")] int? playerId = null)
     {
         if (pkt.Length != 24)
         {
@@ -52,17 +51,19 @@ public class ReplayPlayerController : ControllerBase
         }
 
         using var scope = this.serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        var replayPlayerContext = scope.ServiceProvider.GetRequiredService<ReplayPlayerContext>();
 
-        string query =
-            $"SELECT * " +
-            $"FROM {NAME} ";
+        var conditions = new List<string>();
+        if (replayId != null)
+        {
+            conditions.Add($"ReplayId = '{replayId}'");
+        }
+        if (playerId != null)
+        {
+            conditions.Add($"PlayerId = '{playerId}'");
+        }
 
-        query += DbContext.AddCondition(query, "PKT", pkt);
-        query += DbContext.AddCondition(query, "ReplayId", replayId);
-        query += DbContext.AddCondition(query, "PlayerId", playerId);
-
-        var result = await dbContext.ReadFromDb(query);
+        var result = await replayPlayerContext.Get(pkt, conditions, "*");
 
         return result.Select(entry => (ReplayPlayer)entry!);
     }

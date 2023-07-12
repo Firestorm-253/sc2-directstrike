@@ -1,8 +1,6 @@
-using api.sc2_directstrike.Controllers;
-using api.sc2_directstrike.Services;
-using System.Xml.Linq;
-
 namespace api.sc2_directstrike;
+using Contexts;
+using Controllers;
 
 public class Program
 {
@@ -21,6 +19,10 @@ public class Program
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddSingleton<DbContext>();
+
+        builder.Services.AddTransient<ReplayContext>();
+        builder.Services.AddTransient<ReplayPlayerContext>();
+        builder.Services.AddTransient<PlayerContext>();
 
         var app = builder.Build();
 
