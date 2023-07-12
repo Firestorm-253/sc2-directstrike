@@ -9,7 +9,7 @@ using Contexts;
 public class ReplayController : ControllerBase
 {
     private readonly IServiceProvider serviceProvider;
-    
+
     public ReplayController(IServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
