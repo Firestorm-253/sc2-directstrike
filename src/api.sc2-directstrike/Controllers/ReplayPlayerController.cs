@@ -7,11 +7,9 @@ using DTOs;
 using Contexts;
 
 [ApiController]
-[Route("{pkt}/" + NAME)]
+[Route("{pkt}/" + ReplayPlayerContext.Table)]
 public class ReplayPlayerController : ControllerBase
 {
-    public const string NAME = "replay_players";
-    
     private readonly IServiceProvider serviceProvider;
 
     public ReplayPlayerController(IServiceProvider serviceProvider)
@@ -20,7 +18,7 @@ public class ReplayPlayerController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ReplayPlayer?> GetById(string pkt, int id)
+    public async Task<ReplayPlayer?> GetById(string pkt, ulong id)
     {
         if (pkt.Length != 24)
         {
@@ -42,8 +40,8 @@ public class ReplayPlayerController : ControllerBase
 
     [HttpGet]
     public async Task<IEnumerable<ReplayPlayer>> Get(string pkt,
-                                                     [FromQuery(Name = "replayId")] int? replayId = null,
-                                                     [FromQuery(Name = "playerId")] int? playerId = null)
+                                                     [FromQuery(Name = "replayId")] ulong? replayId = null,
+                                                     [FromQuery(Name = "playerId")] ulong? playerId = null)
     {
         if (pkt.Length != 24)
         {
@@ -76,9 +74,8 @@ public class ReplayPlayerController : ControllerBase
             ReplayId = replay.Id,
             PlayerId = player.Id,
         };
-        await dbContext.WriteToDb(pkt, NAME, replayPlayer);
+        ulong id = await dbContext.WriteToDb(pkt, ReplayPlayerContext.Table, replayPlayer);
         
-        var result = await dbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
-        return replayPlayer with { Id = (uint)result.Last()["Id"], };
+        return replayPlayer with { Id = id };
     }
 }

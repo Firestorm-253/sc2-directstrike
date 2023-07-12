@@ -7,6 +7,8 @@ using Controllers;
 
 public class PlayerContext
 {
+    public const string Table = "players";
+
     private readonly IServiceProvider serviceProvider;
     
     public PlayerContext(IServiceProvider serviceProvider)
@@ -21,7 +23,7 @@ public class PlayerContext
 
         string query =
             $"SELECT {string.Join(", ", selects)} " +
-            $"FROM players " +
+            $"FROM {Table} " +
             $"WHERE PKT = '{pkt}' ";
 
         if (conditions.Any())

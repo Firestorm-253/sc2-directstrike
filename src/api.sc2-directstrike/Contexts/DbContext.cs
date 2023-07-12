@@ -33,38 +33,53 @@ public class DbContext
 
     public async Task<List<Dictionary<string, object>>> ReadFromDb(string query)
     {
-        var command = new MySqlCommand(query, Connection);
+        using var command = new MySqlCommand(query, this.Connection);
+
         var entries = new List<Dictionary<string, object>>();
 
-        using (var dataReader = await command.ExecuteReaderAsync())
+        using var dataReader = await command.ExecuteReaderAsync();
+        var columns = await dataReader.GetColumnSchemaAsync();
+
+        while (await dataReader.ReadAsync())
         {
-            var columns = await dataReader.GetColumnSchemaAsync();
+            var values = new object[dataReader.FieldCount];
+            dataReader.GetValues(values);
 
-            while (await dataReader.ReadAsync())
+            var entry = new Dictionary<string, object>();
+            for (int i = 0; i < values.Length; i++)
             {
-                var values = new object[dataReader.FieldCount];
-                dataReader.GetValues(values);
-
-                var entry = new Dictionary<string, object>();
-                for (int i = 0; i < values.Length; i++)
-                {
-                    entry.Add(columns[i].ColumnName, values[i]);
-                }
-
-                entries.Add(entry);
+                entry.Add(columns[i].ColumnName, values[i]);
             }
-        };
+
+            entries.Add(entry);
+        }
 
         return entries;
     }
 
-    public async Task WriteToDb(string query)
+    public async Task<ulong> WriteToDb(string query)
     {
-        var command = new MySqlCommand(query, Connection);
-        await command.ExecuteNonQueryAsync();
+        query += "; SELECT LAST_INSERT_ID();";
+
+        using var transaction = await this.Connection.BeginTransactionAsync();
+        using var command = new MySqlCommand(query, this.Connection, transaction);
+
+        ulong? index = null;
+        try
+        {
+            index = (ulong?)(await command.ExecuteScalarAsync());
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+        transaction.Commit();
+
+        return index!.Value;
     }
 
-    public async Task WriteToDb(string pkt, string route, Dictionary<string, object> dict)
+    public async Task<ulong> WriteToDb(string pkt, string route, Dictionary<string, object> dict)
     {
         var names = new StringBuilder("PKT, ");
         var values = new StringBuilder($"'{pkt}', ");
@@ -82,8 +97,8 @@ public class DbContext
         names.Remove(names.Length - 2, 2);
         values.Remove(values.Length - 2, 2);
 
-        await WriteToDb($"INSERT INTO {route} ({names}) " +
-                             $"VALUES ({values}) ");
+        return await WriteToDb($"INSERT INTO {route} ({names}) " +
+                               $"VALUES ({values}) ");
     }
 
     public async Task UpdateDb(string pkt, string route, Dictionary<string, object> entry)

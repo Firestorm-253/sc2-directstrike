@@ -5,11 +5,9 @@ using DTOs;
 using Contexts;
 
 [ApiController]
-[Route("{pkt}/" + NAME)]
+[Route("{pkt}/" + ReplayContext.Table)]
 public class ReplayController : ControllerBase
 {
-    public const string NAME = "replays";
-
     private readonly IServiceProvider serviceProvider;
     
     public ReplayController(IServiceProvider serviceProvider)
@@ -32,7 +30,7 @@ public class ReplayController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<Replay?> GetById(string pkt, int id)
+    public async Task<Replay?> GetById(string pkt, ulong id)
     {
         if (pkt.Length != 24)
         {
@@ -53,22 +51,25 @@ public class ReplayController : ControllerBase
     }
 
     [HttpPost]
-    public async Task Post(string pkt, [FromBody] PostReplay postReplay)
+    public async Task Post(string pkt, [FromBody] IEnumerable<PostReplay> postReplays)
     {
-        using var scope = this.serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
-
         if (pkt.Length != 24)
         {
             throw new ArgumentException("ERROR: Invalid PKT length!");
         }
 
-        Replay replay = await GenerateIncrementedReplay(pkt, postReplay, dbContext);
+        using var scope = this.serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        foreach (var postReplayPlayer in postReplay.ReplayPlayers)
+        foreach (var postReplay in postReplays)
         {
-            Player player = await PlayerController.GenerateIncrementedPlayer(pkt, postReplayPlayer.Player, dbContext);
-            ReplayPlayer replayPlayer = await ReplayPlayerController.GenerateIncrementedReplay(pkt, postReplayPlayer, replay, player, dbContext);
+            Replay replay = await GenerateIncrementedReplay(pkt, postReplay, dbContext);
+
+            foreach (var postReplayPlayer in postReplay.ReplayPlayers)
+            {
+                Player player = await PlayerController.GenerateIncrementedPlayer(pkt, postReplayPlayer.Player, dbContext);
+                ReplayPlayer replayPlayer = await ReplayPlayerController.GenerateIncrementedReplay(pkt, postReplayPlayer, replay, player, dbContext);
+            }
         }
     }
 
@@ -76,9 +77,8 @@ public class ReplayController : ControllerBase
     public static async Task<Replay> GenerateIncrementedReplay(string pkt, PostReplay postReplay, DbContext dbContext)
     {
         Replay replay = postReplay;
-        await dbContext.WriteToDb(pkt, NAME, replay);
+        ulong id = await dbContext.WriteToDb(pkt, ReplayContext.Table, replay);
 
-        var result = await dbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
-        return replay with { Id = (uint)result.Last()["Id"] };
+        return replay with { Id = id };
     }
 }

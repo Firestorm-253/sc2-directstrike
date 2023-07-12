@@ -5,11 +5,9 @@ using DTOs;
 using Contexts;
 
 [ApiController]
-[Route("{pkt}/" + NAME)]
+[Route("{pkt}/" + PlayerContext.Table)]
 public class PlayerController : ControllerBase
 {
-    public const string NAME = "players";
-
     private readonly IServiceProvider serviceProvider;
 
     public PlayerController(IServiceProvider serviceProvider)
@@ -18,7 +16,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<Player?> GetById(string pkt, int id)
+    public async Task<Player?> GetById(string pkt, ulong id)
     {
         if (pkt.Length != 24)
         {
@@ -41,7 +39,7 @@ public class PlayerController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<Player>> Get(string pkt,
                                                 [FromQuery(Name = "name")] string? name = null,
-                                                [FromQuery(Name = "inGameId")] int? inGameId = null)
+                                                [FromQuery(Name = "inGameId")] ulong? inGameId = null)
     {
         if (pkt.Length != 24)
         {
@@ -69,16 +67,15 @@ public class PlayerController : ControllerBase
 
     public static async Task<Player> GenerateIncrementedPlayer(string pkt, PostPlayer postPlayer, DbContext dbContext)
     {
-        var result = await dbContext.ReadFromDb($"SELECT * FROM {NAME} WHERE PKT='{pkt}' AND InGameId='{postPlayer.InGameId}'")!;
+        var result = await dbContext.ReadFromDb($"SELECT * FROM {PlayerContext.Table} WHERE PKT='{pkt}' AND InGameId='{postPlayer.InGameId}'")!;
         if (result.Any())
         {
             return result.Single()!;
         }
 
         Player player = postPlayer;
-        await dbContext.WriteToDb(pkt, NAME, player);
+        ulong id = await dbContext.WriteToDb(pkt, PlayerContext.Table, player);
 
-        result = await dbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
-        return player with { Id = (uint)result.Last()["Id"] };
+        return player with { Id = id };
     }
 }
