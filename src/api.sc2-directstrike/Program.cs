@@ -1,4 +1,5 @@
 namespace api.sc2_directstrike;
+using Contexts;
 using Controllers;
 using Services;
 
@@ -19,6 +20,10 @@ public class Program
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddSingleton<DbContext>();
+
+        builder.Services.AddTransient<ReplayContext>();
+        builder.Services.AddTransient<ReplayPlayerContext>();
+        builder.Services.AddTransient<PlayerContext>();
 
         var app = builder.Build();
 
