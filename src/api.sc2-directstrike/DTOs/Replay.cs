@@ -4,7 +4,7 @@ namespace api.sc2_directstrike.DTOs;
 
 public record Replay
 {
-    public uint Id { get; init; }
+    public ulong Id { get; init; }
     public DateTime GameTime { get; init; }
 
 
@@ -24,7 +24,7 @@ public record Replay
 
         return new Replay()
         {
-            Id = (uint)dict["Id"],
+            Id = (ulong)dict["Id"],
             GameTime = (DateTime)dict["GameTime"],
         };
     }
