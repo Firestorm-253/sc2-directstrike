@@ -10,7 +10,7 @@ public class ReplayController : ControllerBase
     public const string NAME = "replays";
 
     [HttpGet]
-    public async Task<IEnumerable<Replay?>> Get(string pkt)
+    public async Task<IEnumerable<Replay>> Get(string pkt)
     {
         if (pkt.Length != 24)
         {
@@ -44,8 +44,12 @@ public class ReplayController : ControllerBase
         query += DbContext.AddCondition(query, "Id", id);
 
         var result = await Program.DbContext.ReadFromDb(query);
-        var entry = result.Single();
-        
+        var entry = result.SingleOrDefault();
+
+        if (entry == null)
+        {
+            return null;
+        }
         return entry;
     }
 

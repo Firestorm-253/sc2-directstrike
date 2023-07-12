@@ -26,15 +26,19 @@ public class ReplayPlayerController : ControllerBase
         query += DbContext.AddCondition(query, "Id", id);
 
         var result = await Program.DbContext.ReadFromDb(query);
-        var entry = result.Single();
+        var entry = result.SingleOrDefault();
 
+        if (entry == null)
+        {
+            return null;
+        }
         return entry;
     }
 
     [HttpGet]
-    public async Task<IEnumerable<ReplayPlayer?>> Get(string pkt,
-                                                      [FromQuery(Name = "replayId")] int? replayId,
-                                                      [FromQuery(Name = "playerId")] int? playerId)
+    public async Task<IEnumerable<ReplayPlayer>> Get(string pkt,
+                                                      [FromQuery(Name = "replayId")] int? replayId = null,
+                                                      [FromQuery(Name = "playerId")] int? playerId = null)
     {
         if (pkt.Length != 24)
         {

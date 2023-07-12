@@ -25,15 +25,19 @@ public class PlayerController : ControllerBase
         query += DbContext.AddCondition(query, "Id", id);
         
         var result = await Program.DbContext.ReadFromDb(query);
-        var entry = result.Single();
+        var entry = result.SingleOrDefault();
 
+        if (entry == null)
+        {
+            return null;
+        }
         return entry;
     }
 
     [HttpGet]
-    public async Task<IEnumerable<Player?>> Get(string pkt,
-                                                [FromQuery(Name = "name")] string? name,
-                                                [FromQuery(Name = "inGameId")] int? inGameId)
+    public async Task<IEnumerable<Player>> Get(string pkt,
+                                                [FromQuery(Name = "name")] string? name = null,
+                                                [FromQuery(Name = "inGameId")] int? inGameId = null)
     {
         if (pkt.Length != 24)
         {
