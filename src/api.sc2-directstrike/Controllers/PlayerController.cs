@@ -18,7 +18,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<Player?> GetById(string pkt, int id)
+    public async Task<Player?> GetById(string pkt, ulong id)
     {
         if (pkt.Length != 24)
         {
@@ -41,7 +41,7 @@ public class PlayerController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<Player>> Get(string pkt,
                                                 [FromQuery(Name = "name")] string? name = null,
-                                                [FromQuery(Name = "inGameId")] int? inGameId = null)
+                                                [FromQuery(Name = "inGameId")] ulong? inGameId = null)
     {
         if (pkt.Length != 24)
         {
@@ -76,7 +76,7 @@ public class PlayerController : ControllerBase
         }
 
         Player player = postPlayer;
-        uint id = await dbContext.WriteToDb(pkt, NAME, player);
+        ulong id = await dbContext.WriteToDb(pkt, NAME, player);
 
         return player with { Id = id };
     }

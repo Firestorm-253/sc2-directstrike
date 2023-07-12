@@ -57,17 +57,17 @@ public class DbContext
         return entries;
     }
 
-    public async Task<uint> WriteToDb(string query)
+    public async Task<ulong> WriteToDb(string query)
     {
         query += "; SELECT LAST_INSERT_ID();";
 
         using var transaction = await this.Connection.BeginTransactionAsync();
         using var command = new MySqlCommand(query, this.Connection, transaction);
 
-        uint? index = null;
+        ulong? index = null;
         try
         {
-            index = (uint?)(await command.ExecuteScalarAsync());
+            index = (ulong?)(await command.ExecuteScalarAsync());
         }
         catch
         {
@@ -79,7 +79,7 @@ public class DbContext
         return index!.Value;
     }
 
-    public async Task<uint> WriteToDb(string pkt, string route, Dictionary<string, object> dict)
+    public async Task<ulong> WriteToDb(string pkt, string route, Dictionary<string, object> dict)
     {
         var names = new StringBuilder("PKT, ");
         var values = new StringBuilder($"'{pkt}', ");

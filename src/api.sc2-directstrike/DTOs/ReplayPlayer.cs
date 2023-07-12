@@ -4,9 +4,9 @@ namespace api.sc2_directstrike.DTOs;
 
 public record ReplayPlayer
 {
-    public uint Id { get; init; }
-    public uint PlayerId { get; init; }
-    public uint ReplayId { get; init; }
+    public ulong Id { get; init; }
+    public ulong PlayerId { get; init; }
+    public ulong ReplayId { get; init; }
 
     public uint Team { get; init; }
     public uint Position { get; init; }
@@ -42,9 +42,9 @@ public record ReplayPlayer
 
         return new ReplayPlayer()
         {
-            Id = (uint)entry["Id"],
-            PlayerId = (uint)entry["PlayerId"],
-            ReplayId = (uint)entry["ReplayId"],
+            Id = (ulong)entry["Id"],
+            PlayerId = (ulong)entry["PlayerId"],
+            ReplayId = (ulong)entry["ReplayId"],
 
             Team = (uint)entry["Team"],
             Position = (uint)entry["Position"],
