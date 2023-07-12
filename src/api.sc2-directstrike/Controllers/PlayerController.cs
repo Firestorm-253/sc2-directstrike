@@ -38,8 +38,8 @@ public class PlayerController : ControllerBase
 
     [HttpGet]
     public async Task<IEnumerable<Player>> Get(string pkt,
-                                                [FromQuery(Name = "name")] string? name = null,
-                                                [FromQuery(Name = "inGameId")] ulong? inGameId = null)
+                                              [FromQuery(Name = "name")] string? name = null,
+                                              [FromQuery(Name = "inGameId")] ulong? inGameId = null)
     {
         if (pkt.Length != 24)
         {
