@@ -55,13 +55,13 @@ public class ReplayController : ControllerBase
     [HttpPost]
     public async Task Post(string pkt, [FromBody] PostReplay postReplay)
     {
-        using var scope = this.serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
-
         if (pkt.Length != 24)
         {
             throw new ArgumentException("ERROR: Invalid PKT length!");
         }
+
+        using var scope = this.serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
         Replay replay = await GenerateIncrementedReplay(pkt, postReplay, dbContext);
 
