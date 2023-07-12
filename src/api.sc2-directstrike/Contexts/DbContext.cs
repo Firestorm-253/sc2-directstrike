@@ -60,8 +60,19 @@ public class DbContext
 
     public async Task WriteToDb(string query)
     {
-        var command = new MySqlCommand(query, Connection);
-        await command.ExecuteNonQueryAsync();
+        using var transaction = await this.Connection.BeginTransactionAsync();
+        using var command = new MySqlCommand(query, this.Connection, transaction);
+        
+        try
+        {
+            await command.ExecuteNonQueryAsync();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+        transaction.Commit();
     }
 
     public async Task WriteToDb(string pkt, string route, Dictionary<string, object> dict)
