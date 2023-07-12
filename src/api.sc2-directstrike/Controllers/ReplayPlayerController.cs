@@ -76,9 +76,8 @@ public class ReplayPlayerController : ControllerBase
             ReplayId = replay.Id,
             PlayerId = player.Id,
         };
-        await dbContext.WriteToDb(pkt, NAME, replayPlayer);
+        uint id = await dbContext.WriteToDb(pkt, NAME, replayPlayer);
         
-        var result = await dbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
-        return replayPlayer with { Id = (uint)result.Last()["Id"], };
+        return replayPlayer with { Id = id };
     }
 }

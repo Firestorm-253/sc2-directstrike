@@ -57,14 +57,17 @@ public class DbContext
         return entries;
     }
 
-    public async Task WriteToDb(string query)
+    public async Task<uint> WriteToDb(string query)
     {
+        query += "; SELECT LAST_INSERT_ID();";
+
         using var transaction = await this.Connection.BeginTransactionAsync();
         using var command = new MySqlCommand(query, this.Connection, transaction);
-        
+
+        uint? index = null;
         try
         {
-            await command.ExecuteNonQueryAsync();
+            index = (uint?)(await command.ExecuteScalarAsync());
         }
         catch
         {
@@ -72,9 +75,11 @@ public class DbContext
             throw;
         }
         transaction.Commit();
+
+        return index!.Value;
     }
 
-    public async Task WriteToDb(string pkt, string route, Dictionary<string, object> dict)
+    public async Task<uint> WriteToDb(string pkt, string route, Dictionary<string, object> dict)
     {
         var names = new StringBuilder("PKT, ");
         var values = new StringBuilder($"'{pkt}', ");
@@ -92,8 +97,8 @@ public class DbContext
         names.Remove(names.Length - 2, 2);
         values.Remove(values.Length - 2, 2);
 
-        await WriteToDb($"INSERT INTO {route} ({names}) " +
-                             $"VALUES ({values}) ");
+        return await WriteToDb($"INSERT INTO {route} ({names}) " +
+                               $"VALUES ({values}) ");
     }
 
     public async Task UpdateDb(string pkt, string route, Dictionary<string, object> entry)

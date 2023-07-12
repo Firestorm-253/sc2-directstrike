@@ -76,9 +76,8 @@ public class ReplayController : ControllerBase
     public static async Task<Replay> GenerateIncrementedReplay(string pkt, PostReplay postReplay, DbContext dbContext)
     {
         Replay replay = postReplay;
-        await dbContext.WriteToDb(pkt, NAME, replay);
+        uint id = await dbContext.WriteToDb(pkt, NAME, replay);
 
-        var result = await dbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
-        return replay with { Id = (uint)result.Last()["Id"] };
+        return replay with { Id = id };
     }
 }

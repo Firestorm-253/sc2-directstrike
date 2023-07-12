@@ -76,9 +76,8 @@ public class PlayerController : ControllerBase
         }
 
         Player player = postPlayer;
-        await dbContext.WriteToDb(pkt, NAME, player);
+        uint id = await dbContext.WriteToDb(pkt, NAME, player);
 
-        result = await dbContext.ReadFromDb($"SELECT Id FROM {NAME} WHERE PKT='{pkt}'");
-        return player with { Id = (uint)result.Last()["Id"] };
+        return player with { Id = id };
     }
 }
