@@ -11,8 +11,8 @@ public record ReplayPlayer
     public uint Team { get; init; }
     public uint Position { get; init; }
 
-    public float RatingBefore { get; init; }
-    public float RatingAfter { get; init; }
+    public float RatingBefore { get; set; }
+    public float RatingAfter { get; set; }
 
     public string Commander { get; init; } = null!;
 

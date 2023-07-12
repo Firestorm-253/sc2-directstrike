@@ -3,12 +3,19 @@ using MySqlConnector;
 using System.Collections.Generic;
 using System.Text;
 
-namespace api.sc2_directstrike;
+namespace api.sc2_directstrike.Contexts;
 using DTOs;
 
 public class DbContext
 {
     public MySqlConnection Connection { get; set; } = null!;
+
+    private readonly IServiceProvider serviceProvider;
+
+    public DbContext(IServiceProvider serviceProvider)
+    {
+        this.serviceProvider = serviceProvider;
+    }
 
     public void Connect(string server, int port, string database, string user, string password)
     {
@@ -20,13 +27,13 @@ public class DbContext
             { "user", user },
             { "password", password }
         };
-        this.Connection = new MySqlConnection(connectionStringBuilder.ConnectionString);
-        this.Connection.Open();
+        Connection = new MySqlConnection(connectionStringBuilder.ConnectionString);
+        Connection.Open();
     }
 
     public async Task<List<Dictionary<string, object>>> ReadFromDb(string query)
     {
-        var command = new MySqlCommand(query, this.Connection);
+        var command = new MySqlCommand(query, Connection);
         var entries = new List<Dictionary<string, object>>();
 
         using (var dataReader = await command.ExecuteReaderAsync())
@@ -53,7 +60,7 @@ public class DbContext
 
     public async Task WriteToDb(string query)
     {
-        var command = new MySqlCommand(query, this.Connection);
+        var command = new MySqlCommand(query, Connection);
         await command.ExecuteNonQueryAsync();
     }
 
@@ -75,7 +82,7 @@ public class DbContext
         names.Remove(names.Length - 2, 2);
         values.Remove(values.Length - 2, 2);
 
-        await this.WriteToDb($"INSERT INTO {route} ({names}) " +
+        await WriteToDb($"INSERT INTO {route} ({names}) " +
                              $"VALUES ({values}) ");
     }
 
@@ -96,7 +103,7 @@ public class DbContext
             }
         }
 
-        await this.WriteToDb($"UPDATE {route} " +
+        await WriteToDb($"UPDATE {route} " +
                              $"SET {entries} " +
                              $"{conditions}");
     }
