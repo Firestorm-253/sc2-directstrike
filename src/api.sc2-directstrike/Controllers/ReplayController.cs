@@ -53,22 +53,25 @@ public class ReplayController : ControllerBase
     }
 
     [HttpPost]
-    public async Task Post(string pkt, [FromBody] PostReplay postReplay)
+    public async Task Post(string pkt, [FromBody] IEnumerable<PostReplay> postReplays)
     {
-        using var scope = this.serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
-
         if (pkt.Length != 24)
         {
             throw new ArgumentException("ERROR: Invalid PKT length!");
         }
 
-        Replay replay = await GenerateIncrementedReplay(pkt, postReplay, dbContext);
+        using var scope = this.serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        foreach (var postReplayPlayer in postReplay.ReplayPlayers)
+        foreach (var postReplay in postReplays)
         {
-            Player player = await PlayerController.GenerateIncrementedPlayer(pkt, postReplayPlayer.Player, dbContext);
-            ReplayPlayer replayPlayer = await ReplayPlayerController.GenerateIncrementedReplay(pkt, postReplayPlayer, replay, player, dbContext);
+            Replay replay = await GenerateIncrementedReplay(pkt, postReplay, dbContext);
+
+            foreach (var postReplayPlayer in postReplay.ReplayPlayers)
+            {
+                Player player = await PlayerController.GenerateIncrementedPlayer(pkt, postReplayPlayer.Player, dbContext);
+                ReplayPlayer replayPlayer = await ReplayPlayerController.GenerateIncrementedReplay(pkt, postReplayPlayer, replay, player, dbContext);
+            }
         }
     }
 
