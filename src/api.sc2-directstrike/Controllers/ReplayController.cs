@@ -73,6 +73,34 @@ public class ReplayController : ControllerBase
         }
     }
 
+    [HttpDelete]
+    public async Task Delete(string pkt)
+    {
+        if (pkt.Length != 24)
+        {
+            throw new ArgumentException("ERROR: Invalid PKT length!");
+        }
+
+        using var scope = this.serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
+        await dbContext.WriteToDb($"DELETE FROM {ReplayContext.Table} ");
+    }
+
+    [HttpDelete("{id}")]
+    public async Task Delete(string pkt, ulong id)
+    {
+        if (pkt.Length != 24)
+        {
+            throw new ArgumentException("ERROR: Invalid PKT length!");
+        }
+
+        using var scope = this.serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
+        await dbContext.WriteToDb($"DELETE FROM {ReplayContext.Table} WHERE Id = '{id}' ");
+    }
+
 
     public static async Task<Replay> GenerateIncrementedReplay(string pkt, PostReplay postReplay, DbContext dbContext)
     {
