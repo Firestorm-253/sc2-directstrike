@@ -3,42 +3,44 @@ using System.Net.Http.Headers;
 
 
 var apiCommunicator = new ApiCommunicator();
-string pkt = "FO6rBWmzz0nwcMXEyTPwzTSu"; //apiCommunicator.Get<string>("pkt")!;
-
-apiCommunicator.Delete($"{pkt}/replay_players");
-
+string pkt = "7Ch22MyajdSm2ldLuvCxRCFv"; //apiCommunicator.Get<string>("pkt")!;
 
 var replays = apiCommunicator.Get<IEnumerable<Replay>>($"{pkt}/replays");
 var replay_players = apiCommunicator.Get<IEnumerable<ReplayPlayer>>($"{pkt}/replay_players");
 var players = apiCommunicator.Get<IEnumerable<Player>>($"{pkt}/players");
 
-var playerA = new PostPlayer(0, "A");
-var playerB = new PostPlayer(1, "B");
-var playerC = new PostPlayer(2, "C");
+//var playerA = new PostPlayer(0, "A");
+//var playerB = new PostPlayer(1, "B");
+//var playerC = new PostPlayer(2, "C");
+//apiCommunicator.Post($"{pkt}/replays", new PostReplay[]
+//{
+//    new(DateTime.UtcNow.AddMinutes(0), new PostReplayPlayer[]
+//    {
+//        new(playerA, 0, 0, ""),
+//        new(playerB, 1, 1, ""),
+//    }),
+//    new(DateTime.UtcNow.AddMinutes(1), new PostReplayPlayer[]
+//    {
+//        new(playerA, 0, 0, ""),
+//        new(playerC, 1, 1, ""),
+//    }),
+//    new(DateTime.UtcNow.AddMinutes(2), new PostReplayPlayer[]
+//    {
+//        new(playerB, 0, 0, ""),
+//        new(playerC, 1, 1, ""),
+//    }),
+//});
 
-apiCommunicator.Post($"{pkt}/replays", new PostReplay[]
+//replays = apiCommunicator.Get<IEnumerable<Replay>>($"{pkt}/replays");
+//replay_players = apiCommunicator.Get<IEnumerable<ReplayPlayer>>($"{pkt}/replay_players");
+//players = apiCommunicator.Get<IEnumerable<Player>>($"{pkt}/players");
+
+if (apiCommunicator.Execute($"{pkt}/ratings"))
 {
-    new(DateTime.UtcNow.AddMinutes(0), new PostReplayPlayer[]
-    {
-        new(playerA, 0, 0, ""),
-        new(playerB, 1, 1, ""),
-    }),
-    new(DateTime.UtcNow.AddMinutes(1), new PostReplayPlayer[]
-    {
-        new(playerA, 0, 0, ""),
-        new(playerC, 1, 1, ""),
-    }),
-    new(DateTime.UtcNow.AddMinutes(2), new PostReplayPlayer[]
-    {
-        new(playerB, 0, 0, ""),
-        new(playerC, 1, 1, ""),
-    }),
-});
-
-replays = apiCommunicator.Get<IEnumerable<Replay>>($"{pkt}/replays");
-replay_players = apiCommunicator.Get<IEnumerable<ReplayPlayer>>($"{pkt}/replay_players");
-players = apiCommunicator.Get<IEnumerable<Player>>($"{pkt}/players");
-
+    replays = apiCommunicator.Get<IEnumerable<Replay>>($"{pkt}/replays");
+    replay_players = apiCommunicator.Get<IEnumerable<ReplayPlayer>>($"{pkt}/replay_players");
+    players = apiCommunicator.Get<IEnumerable<Player>>($"{pkt}/players");
+}
 
 Console.ReadKey();
 
@@ -55,6 +57,14 @@ public class ApiCommunicator
         };
         client.DefaultRequestHeaders.Accept.Clear();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    }
+
+    public bool Execute(string requestUrl)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+        var response = client.SendAsync(request).GetAwaiter().GetResult();
+
+        return response.IsSuccessStatusCode;
     }
 
     public T? Get<T>(string requestUrl)
