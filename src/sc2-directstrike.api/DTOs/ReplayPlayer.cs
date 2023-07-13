@@ -10,6 +10,8 @@ public record ReplayPlayer
 
     public uint Team { get; init; }
     public uint Position { get; init; }
+    public uint Result { get; init; } // 0-Loss, 1-Win
+    public uint Duration { get; init; }
 
     public float RatingBefore { get; set; }
     public float RatingAfter { get; set; }
@@ -26,6 +28,8 @@ public record ReplayPlayer
 
             { "Team", replayPlayer.Team },
             { "Position", replayPlayer.Position },
+            { "Result", replayPlayer.Result },
+            { "Duration", replayPlayer.Duration },
 
             { "RatingBefore", replayPlayer.RatingBefore },
             { "RatingAfter", replayPlayer.RatingAfter },
@@ -48,6 +52,8 @@ public record ReplayPlayer
 
             Team = (uint)entry["Team"],
             Position = (uint)entry["Position"],
+            Result = (uint)entry["Result"],
+            Duration = (uint)entry["Duration"],
 
             RatingBefore = (float)entry["RatingBefore"],
             RatingAfter = (float)entry["RatingAfter"],
