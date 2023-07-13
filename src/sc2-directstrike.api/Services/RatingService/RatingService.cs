@@ -3,13 +3,16 @@
 namespace sc2_directstrike.api.Services;
 using DTOs;
 using Contexts;
+using Data.RatingService.ProcessData;
+using Data.RatingService;
 
-public class RatingService
+public partial class RatingService
 {
     private readonly IServiceProvider serviceProvider;
 
     private Dictionary<ulong, Replay> replays = null!;
-    private Dictionary<ulong, List<ReplayPlayer>> replays_replayPlayers = null!;
+    private Dictionary<ulong, List<ReplayPlayer>> replayPlayers = null!;
+    private Dictionary<string, Dictionary<ulong, List<ReplayPlayer>>> playerRatings = null!;
 
     public RatingService(IServiceProvider serviceProvider)
     {
@@ -22,23 +25,35 @@ public class RatingService
 
         var replayContext = scope.ServiceProvider.GetRequiredService<ReplayContext>();
         var replayPlayerContext = scope.ServiceProvider.GetRequiredService<ReplayPlayerContext>();
-        var playerContext = scope.ServiceProvider.GetRequiredService<PlayerContext>();
+        //var playerContext = scope.ServiceProvider.GetRequiredService<PlayerContext>();
 
         this.replays = (await replayContext.Get(pkt, Array.Empty<string>(), "*")).OrderBy(r => r.GameTime).ToDictionary(r => r.Id);
         var replayPlayers = (await replayPlayerContext.Get(pkt, Array.Empty<string>(), "*")).ToDictionary(rp => rp.Id);
         //var players = (await playerContext.Get(pkt, Array.Empty<string>(), "*")).ToDictionary(p => p.Id);
 
-        this.replays_replayPlayers = new Dictionary<ulong, List<ReplayPlayer>>();
+        this.playerRatings = new();
+        this.replayPlayers = new();
+
         foreach (var ent_replayPlayer in replayPlayers)
         {
             var replayPlayer = ent_replayPlayer.Value;
+            var replay = replays[replayPlayer.ReplayId];
 
-            if (!replays_replayPlayers.ContainsKey(replayPlayer.ReplayId))
+            if (!this.playerRatings.ContainsKey(replay.GameMode))
             {
-                replays_replayPlayers.Add(replayPlayer.ReplayId, new List<ReplayPlayer>());
+                this.playerRatings.Add(replay.GameMode, new());
             }
+            if (!this.playerRatings[replay.GameMode].ContainsKey(replayPlayer.PlayerId))
+            {
+                this.playerRatings[replay.GameMode].Add(replayPlayer.PlayerId, new());
+            }
+            //this.playerRatings[replay.GameMode][replayPlayer.PlayerId].Add(replayPlayer);
 
-            replays_replayPlayers[replayPlayer.ReplayId].Add(replayPlayer);
+            if (!this.replayPlayers.ContainsKey(replayPlayer.ReplayId))
+            {
+                this.replayPlayers.Add(replayPlayer.ReplayId, new());
+            }
+            this.replayPlayers[replayPlayer.ReplayId].Add(replayPlayer);
         }
     }
 
@@ -60,17 +75,29 @@ public class RatingService
 
         foreach (var ent_replay in this.replays)
         {
-            this.ProcessReplay(ent_replay.Value);
+            var replay = ent_replay.Value;
+            var replayData = new ReplayData(replay, replayPlayers[replay.Id]);
+
+            if (replayData.Team1.Players.Length != 3 || replayData.Team2.Players.Length != 3)
+            {
+                throw new Exception();
+            }
+            if (!replayData.Team1.IsWinner && !replayData.Team2.IsWinner)
+            {
+                throw new Exception();
+            }
+
+            this.ProcessReplay(replayData, RatingOptions.Default);
         }
 
-        await UpdateRatings(pkt, this.replays_replayPlayers.SelectMany(r => r.Value));
+        await UpdateRatings(pkt, replayPlayers.SelectMany(re => re.Value));
     }
 
-    private void ProcessReplay(Replay replay)
+    private void ProcessReplay(ReplayData replayData, RatingOptions ratingOptions)
     {
-        var replayPlayers = this.replays_replayPlayers[replay.Id];
+        SetReplayData(replayData, ratingOptions);
 
-        // ToDo
-        replayPlayers[0].RatingAfter = 12;
+        CalculateRatingsDeltas(replayData.Team1, replayData, ratingOptions);
+        CalculateRatingsDeltas(replayData.Team2, replayData, ratingOptions);
     }
 }
