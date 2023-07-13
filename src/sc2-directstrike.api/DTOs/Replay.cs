@@ -6,6 +6,7 @@ public record Replay
 {
     public ulong Id { get; init; }
     public DateTime GameTime { get; init; }
+    public string GameMode { get; init; } = null!;
 
 
     public static implicit operator Dictionary<string, object>(Replay replay)
@@ -13,6 +14,7 @@ public record Replay
         {
             { "Id", replay.Id },
             { "GameTime", replay.GameTime.ToString("yyyy-dd-MM hh:mm:ss") },
+            { "GameMode", replay.GameMode },
         };
 
     public static implicit operator Replay? (Dictionary<string, object> dict)
@@ -26,6 +28,7 @@ public record Replay
         {
             Id = (ulong)dict["Id"],
             GameTime = (DateTime)dict["GameTime"],
+            GameMode = (string)dict["GameMode"],
         };
     }
 }
@@ -33,6 +36,7 @@ public record Replay
 public record PostReplay
 {
     public DateTime GameTime { get; init; }
+    public string GameMode { get; init; } = null!;
     public PostReplayPlayer[] ReplayPlayers { get; init; } = null!;
 
 
@@ -40,5 +44,6 @@ public record PostReplay
         => new()
         {
             GameTime = postReplay.GameTime,
+            GameMode = postReplay.GameMode,
         };
 }
