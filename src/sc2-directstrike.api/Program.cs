@@ -1,4 +1,4 @@
-namespace api.sc2_directstrike;
+namespace sc2_directstrike.api;
 using Contexts;
 using Controllers;
 

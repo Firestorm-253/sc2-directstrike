@@ -1,6 +1,6 @@
-﻿namespace api.sc2_directstrike.tests.UnitTests.Controllers;
+﻿namespace sc2_directstrike.api.tests.UnitTests.Controllers;
 
-using sc2_directstrike.Controllers;
+using api.Controllers;
 
 public class PKTControllerTests
 {

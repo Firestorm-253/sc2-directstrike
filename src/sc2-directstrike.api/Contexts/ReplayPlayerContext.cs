@@ -1,7 +1,7 @@
 ﻿using System.Xml.Linq;
 using Microsoft.AspNetCore.Http;
 
-namespace api.sc2_directstrike.Contexts;
+namespace sc2_directstrike.api.Contexts;
 using DTOs;
 using Controllers;
 

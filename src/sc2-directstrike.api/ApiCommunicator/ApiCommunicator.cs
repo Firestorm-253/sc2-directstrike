@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Headers;
 
-namespace api.sc2_directstrike;
+namespace sc2_directstrike.api;
 
 public partial class ApiCommunicator
 {

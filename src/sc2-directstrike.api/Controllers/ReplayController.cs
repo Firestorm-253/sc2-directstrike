@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace api.sc2_directstrike.Controllers;
+namespace sc2_directstrike.api.Controllers;
 using DTOs;
 using Contexts;
 

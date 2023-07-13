@@ -2,7 +2,7 @@
 using System.Numerics;
 using System.Xml.Linq;
 
-namespace api.sc2_directstrike.Controllers;
+namespace sc2_directstrike.api.Controllers;
 using DTOs;
 using Contexts;
 
