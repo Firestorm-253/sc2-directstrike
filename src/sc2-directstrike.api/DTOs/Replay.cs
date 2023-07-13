@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace api.sc2_directstrike.DTOs;
+namespace sc2_directstrike.api.DTOs;
 
 public record Replay
 {

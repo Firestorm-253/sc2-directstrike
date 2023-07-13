@@ -3,7 +3,7 @@ using MySqlConnector;
 using System.Collections.Generic;
 using System.Text;
 
-namespace api.sc2_directstrike.Contexts;
+namespace sc2_directstrike.api.Contexts;
 using DTOs;
 
 public class DbContext

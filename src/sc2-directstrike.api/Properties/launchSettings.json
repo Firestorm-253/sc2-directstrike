@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "api.sc2_directstrike": {
+    "sc2_directstrike.api": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",

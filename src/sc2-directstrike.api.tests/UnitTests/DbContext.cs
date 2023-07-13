@@ -1,7 +1,7 @@
-﻿namespace api.sc2_directstrike.tests.UnitTests;
+﻿namespace sc2_directstrike.api.tests.UnitTests;
 
-using api.sc2_directstrike.Contexts;
-using sc2_directstrike.Controllers;
+using api.Contexts;
+using api.Controllers;
 
 public class DbContextTests
 {

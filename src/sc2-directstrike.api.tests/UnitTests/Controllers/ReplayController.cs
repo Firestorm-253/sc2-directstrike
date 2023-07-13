@@ -1,6 +1,6 @@
-﻿namespace api.sc2_directstrike.tests.UnitTests.Controllers;
+﻿namespace sc2_directstrike.api.tests.UnitTests.Controllers;
 
-using api.sc2_directstrike.Controllers;
+using api.Controllers;
 
 public class ReplayControllerTests
 {
