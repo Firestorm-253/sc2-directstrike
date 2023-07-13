@@ -1,9 +1,9 @@
-﻿using api.sc2_directstrike.DTOs;
+﻿using System.Xml.Linq;
 using Microsoft.AspNetCore.Mvc;
 
-namespace api.sc2_directstrike.Controllers;
+namespace sc2_directstrike.api.Controllers;
 using Services;
-using System.Xml.Linq;
+using DTOs;
 
 [ApiController]
 [Route("{pkt}/" + NAME)]
