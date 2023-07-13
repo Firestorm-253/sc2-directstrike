@@ -14,7 +14,7 @@ public record Replay
         => new()
         {
             { "Id", replay.Id },
-            { "GameTime", replay.GameTime.ToString("yyyy-dd-MM hh:mm:ss") },
+            { "GameTime", replay.GameTime.ToString("yyyy-MM-dd hh:mm:ss") },
             { "GameMode", replay.GameMode },
             { "Duration", replay.Duration },
         };

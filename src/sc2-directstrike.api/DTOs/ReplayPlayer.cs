@@ -69,6 +69,8 @@ public record PostReplayPlayer
 
     public uint Team { get; init; }
     public uint Position { get; init; }
+    public uint Result { get; init; }
+    public uint Duration { get; init; }
 
     public string Commander { get; init; } = null!;
 
@@ -78,6 +80,8 @@ public record PostReplayPlayer
         {
             Team = postReplayPlayer.Team,
             Position = postReplayPlayer.Position,
+            Result = postReplayPlayer.Result,
+            Duration = postReplayPlayer.Duration,
 
             Commander = postReplayPlayer.Commander,
         };
