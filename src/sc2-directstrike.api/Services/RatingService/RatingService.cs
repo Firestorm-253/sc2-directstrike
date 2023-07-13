@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace sc2_directstrike.api.Services;
+﻿namespace sc2_directstrike.api.Services;
 using DTOs;
 using Contexts;
 using Data.RatingService.ProcessData;
