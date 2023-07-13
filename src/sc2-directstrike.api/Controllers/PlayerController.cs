@@ -105,7 +105,7 @@ public class PlayerController : ControllerBase
         using var scope = this.serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        await dbContext.WriteToDb($"DELETE FROM {PlayerContext.Table} WHERE Id = '{id}' ");
+        await dbContext.WriteToDb($"DELETE FROM {PlayerContext.Table} WHERE PKT = '{pkt}' AND Id = '{id}' ");
     }
 
 

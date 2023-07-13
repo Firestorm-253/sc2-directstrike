@@ -16,7 +16,8 @@ public class ReplayController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IEnumerable<Replay>> Get(string pkt)
+    public async Task<IEnumerable<Replay>> Get(string pkt,
+                                              [FromQuery(Name = "gameMode")] string? gameMode = null)
     {
         if (pkt.Length != 24)
         {
@@ -26,7 +27,13 @@ public class ReplayController : ControllerBase
         using var scope = this.serviceProvider.CreateScope();
         var replayContext = scope.ServiceProvider.GetRequiredService<ReplayContext>();
 
-        return await replayContext.Get(pkt, conditions: Array.Empty<string>(), selects: "*");
+        var conditions = new List<string>();
+        if (gameMode != null)
+        {
+            conditions.Add($"GameMode = '{gameMode}'");
+        }
+
+        return await replayContext.Get(pkt, conditions, selects: "*");
     }
 
     [HttpGet("{id}")]
@@ -74,7 +81,8 @@ public class ReplayController : ControllerBase
     }
 
     [HttpDelete]
-    public async Task Delete(string pkt)
+    public async Task Delete(string pkt,
+                            [FromQuery(Name = "gameMode")] string? gameMode = null)
     {
         if (pkt.Length != 24)
         {
@@ -84,7 +92,17 @@ public class ReplayController : ControllerBase
         using var scope = this.serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        await dbContext.WriteToDb($"DELETE FROM {ReplayContext.Table} ");
+        string query =
+            $"DELETE " +
+            $"FROM {ReplayContext.Table} " +
+            $"WHERE PKT = '{pkt}' ";
+
+        if (gameMode != null)
+        {
+            query += $"AND GameMode = '{gameMode}' ";
+        }
+
+        await dbContext.WriteToDb(query);
     }
 
     [HttpDelete("{id}")]
@@ -98,7 +116,7 @@ public class ReplayController : ControllerBase
         using var scope = this.serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        await dbContext.WriteToDb($"DELETE FROM {ReplayContext.Table} WHERE Id = '{id}' ");
+        await dbContext.WriteToDb($"DELETE FROM {ReplayContext.Table} WHERE PKT = '{pkt}' AND Id = '{id}' ");
     }
 
 
