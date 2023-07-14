@@ -1,41 +1,65 @@
 ﻿using Newtonsoft.Json;
 using System.Net.Http.Headers;
-
+using System.Text.Json;
 
 var apiCommunicator = new ApiCommunicator();
-string pkt = "7Ch22MyajdSm2ldLuvCxRCFv"; //apiCommunicator.Get<string>("pkt")!;
+string pkt = apiCommunicator.Get<string>("pkt")!;
 
 var replays = apiCommunicator.Get<IEnumerable<Replay>>($"{pkt}/replays");
 var replay_players = apiCommunicator.Get<IEnumerable<ReplayPlayer>>($"{pkt}/replay_players");
 var players = apiCommunicator.Get<IEnumerable<Player>>($"{pkt}/players");
 
-//var playerA = new PostPlayer(0, "A");
-//var playerB = new PostPlayer(1, "B");
-//var playerC = new PostPlayer(2, "C");
-//apiCommunicator.Post($"{pkt}/replays", new PostReplay[]
-//{
-//    new(DateTime.UtcNow.AddMinutes(0), new PostReplayPlayer[]
-//    {
-//        new(playerA, 0, 0, ""),
-//        new(playerB, 1, 1, ""),
-//    }),
-//    new(DateTime.UtcNow.AddMinutes(1), new PostReplayPlayer[]
-//    {
-//        new(playerA, 0, 0, ""),
-//        new(playerC, 1, 1, ""),
-//    }),
-//    new(DateTime.UtcNow.AddMinutes(2), new PostReplayPlayer[]
-//    {
-//        new(playerB, 0, 0, ""),
-//        new(playerC, 1, 1, ""),
-//    }),
-//});
+var playerA = new PostPlayer(1, "A");
+var playerB = new PostPlayer(2, "B");
+var playerC = new PostPlayer(3, "C");
+var playerD = new PostPlayer(4, "D");
+var playerE = new PostPlayer(5, "E");
+var playerF = new PostPlayer(6, "F");
+apiCommunicator.Post($"{pkt}/replays", new PostReplay[]
+{
+    new(DateTime.UtcNow.AddMinutes(0), "DirectStrike_Commanders_3v3", 1200, new PostReplayPlayer[]
+    {
+        new(playerA, 1, 1, 0, 1200, ""),
+        new(playerB, 1, 2, 0, 1200, ""),
+        new(playerC, 1, 3, 0, 1200, ""),
+        new(playerD, 2, 1, 1, 1200, ""),
+        new(playerE, 2, 2, 1, 1200, ""),
+        new(playerF, 2, 3, 1, 1200, ""),
+    }),
+    new(DateTime.UtcNow.AddMinutes(1), "DirectStrike_Commanders_3v3", 1200, new PostReplayPlayer[]
+    {
+        new(playerA, 1, 1, 0, 1200, ""),
+        new(playerB, 1, 2, 0, 1200, ""),
+        new(playerC, 1, 3, 0, 1200, ""),
+        new(playerD, 2, 1, 1, 1200, ""),
+        new(playerE, 2, 2, 1, 1200, ""),
+        new(playerF, 2, 3, 1, 1200, ""),
+    }),
+    new(DateTime.UtcNow.AddMinutes(2), "DirectStrike_Commanders_3v3", 1200, new PostReplayPlayer[]
+    {
+        new(playerA, 1, 1, 0, 1200, ""),
+        new(playerB, 1, 2, 0, 1200, ""),
+        new(playerC, 1, 3, 0, 1200, ""),
+        new(playerD, 2, 1, 1, 1200, ""),
+        new(playerE, 2, 2, 1, 1200, ""),
+        new(playerF, 2, 3, 1, 1200, ""),
+    }),
+    new(DateTime.UtcNow.AddMinutes(3), "DirectStrike_Commanders_3v3", 1200, new PostReplayPlayer[]
+    {
+        new(playerA, 1, 1, 0, 1200, ""),
+        new(playerB, 1, 2, 0, 1200, ""),
+        new(playerC, 1, 3, 0, 1200, ""),
+        new(playerD, 2, 1, 1, 1200, ""),
+        new(playerE, 2, 2, 1, 1200, ""),
+        new(playerF, 2, 3, 1, 1200, ""),
+    }),
+}).Wait();
 
-//replays = apiCommunicator.Get<IEnumerable<Replay>>($"{pkt}/replays");
-//replay_players = apiCommunicator.Get<IEnumerable<ReplayPlayer>>($"{pkt}/replay_players");
-//players = apiCommunicator.Get<IEnumerable<Player>>($"{pkt}/players");
+replays = apiCommunicator.Get<IEnumerable<Replay>>($"{pkt}/replays");
+replay_players = apiCommunicator.Get<IEnumerable<ReplayPlayer>>($"{pkt}/replay_players");
+players = apiCommunicator.Get<IEnumerable<Player>>($"{pkt}/players");
 
-if (apiCommunicator.Execute($"{pkt}/ratings"))
+if (apiCommunicator.Execute($"{pkt}/rating"))
 {
     replays = apiCommunicator.Get<IEnumerable<Replay>>($"{pkt}/replays");
     replay_players = apiCommunicator.Get<IEnumerable<ReplayPlayer>>($"{pkt}/replay_players");
@@ -61,7 +85,7 @@ public class ApiCommunicator
 
     public bool Execute(string requestUrl)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+        var request = new HttpRequestMessage(HttpMethod.Post, requestUrl);
         var response = client.SendAsync(request).GetAwaiter().GetResult();
 
         return response.IsSuccessStatusCode;
@@ -79,14 +103,9 @@ public class ApiCommunicator
         return default;
     }
 
-    public void Post<T>(string requestUrl, T[] objs)
+    public async Task Post<T>(string requestUrl, T[] objs)
     {
-        var json = JsonConvert.SerializeObject(objs);
-        var httpContent = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-
-        var request = new HttpRequestMessage(HttpMethod.Post, requestUrl) { Content = httpContent };
-
-        var response = client.SendAsync(request).GetAwaiter().GetResult();
+        var response = await client.PostAsJsonAsync(requestUrl, objs);
         if (!response.IsSuccessStatusCode)
         {
             throw new Exception("ERROR: Post failed!");
@@ -107,10 +126,14 @@ public class ApiCommunicator
 
 public record Replay(
     ulong Id,
-    DateTime GameTime
+    DateTime GameTime,
+    string GameMode,
+    uint Duration
 );
 public record PostReplay(
     DateTime GameTime,
+    string GameMode,
+    uint Duration,
     PostReplayPlayer[] ReplayPlayers
 );
 
@@ -120,12 +143,20 @@ public record ReplayPlayer(
     ulong ReplayId,
     uint Team,
     uint Position,
-    string Commander
+    uint Result,
+    uint Duration,
+    string Commander,
+    float RatingBefore,
+    float RatingAfter,
+    float DeviationBefore,
+    float DeviationAfter
 );
 public record PostReplayPlayer(
     PostPlayer Player,
     uint Team,
     uint Position,
+    uint Result,
+    uint Duration,
     string Commander
 );
 
