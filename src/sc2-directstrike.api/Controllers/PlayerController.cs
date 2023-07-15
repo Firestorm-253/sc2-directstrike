@@ -111,15 +111,22 @@ public class PlayerController : ControllerBase
 
     public static async Task<Player> GenerateIncrementedPlayer(string pkt, PostPlayer postPlayer, DbContext dbContext)
     {
-        var result = await dbContext.ReadFromDb($"SELECT * FROM {PlayerContext.Table} WHERE PKT='{pkt}' AND InGameId='{postPlayer.InGameId}'")!;
-        if (result.Any())
+        try
         {
-            return result.Single()!;
+            var result = await dbContext.ReadFromDb($"SELECT * FROM {PlayerContext.Table} WHERE PKT='{pkt}' AND InGameId='{postPlayer.InGameId}'")!;
+            if (result.Any())
+            {
+                return result.Single()!;
+            }
+
+            Player player = postPlayer;
+            ulong id = await dbContext.WriteToDb(pkt, PlayerContext.Table, player);
+
+            return player with { Id = id };
         }
-
-        Player player = postPlayer;
-        ulong id = await dbContext.WriteToDb(pkt, PlayerContext.Table, player);
-
-        return player with { Id = id };
+        catch (Exception exp)
+        {
+            throw exp;
+        }
     }
 }

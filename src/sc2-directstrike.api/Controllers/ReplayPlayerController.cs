@@ -113,13 +113,20 @@ public class ReplayPlayerController : ControllerBase
 
     public static async Task<ReplayPlayer> GenerateIncrementedReplay(string pkt, PostReplayPlayer postReplayPlayer, Replay replay, Player player, DbContext dbContext)
     {
-        ReplayPlayer replayPlayer = ((ReplayPlayer)postReplayPlayer) with
+        try
         {
-            ReplayId = replay.Id,
-            PlayerId = player.Id,
-        };
-        ulong id = await dbContext.WriteToDb(pkt, ReplayPlayerContext.Table, replayPlayer);
-        
-        return replayPlayer with { Id = id };
+            ReplayPlayer replayPlayer = ((ReplayPlayer)postReplayPlayer) with
+            {
+                ReplayId = replay.Id,
+                PlayerId = player.Id,
+            };
+            ulong id = await dbContext.WriteToDb(pkt, ReplayPlayerContext.Table, replayPlayer);
+
+            return replayPlayer with { Id = id };
+        }
+        catch (Exception exp)
+        {
+            throw exp;
+        }
     }
 }

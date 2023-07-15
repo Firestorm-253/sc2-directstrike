@@ -76,13 +76,13 @@ public partial class RatingService
             var replay = ent_replay.Value;
             var replayData = new ReplayData(replay, replayPlayers[replay.Id]);
 
-            if (replayData.Team1.Players.Length != 3 || replayData.Team2.Players.Length != 3)
+            if (replayData.Team1.Players.Length != replayData.Team2.Players.Length)
             {
-                throw new Exception();
+                throw new Exception("ERROR: Unequal Teams!");
             }
             if (!replayData.Team1.IsWinner && !replayData.Team2.IsWinner)
             {
-                throw new Exception();
+                throw new Exception("ERROR: No Winner!");
             }
 
             this.ProcessReplay(replayData, RatingOptions.Default);
