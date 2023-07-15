@@ -68,15 +68,22 @@ public class ReplayController : ControllerBase
         using var scope = this.serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        foreach (var postReplay in postReplays)
+        try
         {
-            Replay replay = await GenerateIncrementedReplay(pkt, postReplay, dbContext);
-
-            foreach (var postReplayPlayer in postReplay.ReplayPlayers)
+            foreach (var postReplay in postReplays)
             {
-                Player player = await PlayerController.GenerateIncrementedPlayer(pkt, postReplayPlayer.Player, dbContext);
-                ReplayPlayer replayPlayer = await ReplayPlayerController.GenerateIncrementedReplay(pkt, postReplayPlayer, replay, player, dbContext);
+                Replay replay = await GenerateIncrementedReplay(pkt, postReplay, dbContext);
+
+                foreach (var postReplayPlayer in postReplay.ReplayPlayers)
+                {
+                    Player player = await PlayerController.GenerateIncrementedPlayer(pkt, postReplayPlayer.Player, dbContext);
+                    ReplayPlayer replayPlayer = await ReplayPlayerController.GenerateIncrementedReplay(pkt, postReplayPlayer, replay, player, dbContext);
+                }
             }
+        }
+        catch (Exception exp)
+        {
+            throw exp;
         }
     }
 
@@ -122,9 +129,16 @@ public class ReplayController : ControllerBase
 
     public static async Task<Replay> GenerateIncrementedReplay(string pkt, PostReplay postReplay, DbContext dbContext)
     {
-        Replay replay = postReplay;
-        ulong id = await dbContext.WriteToDb(pkt, ReplayContext.Table, replay);
+        try
+        {
+            Replay replay = postReplay;
+            ulong id = await dbContext.WriteToDb(pkt, ReplayContext.Table, replay);
 
-        return replay with { Id = id };
+            return replay with { Id = id };
+        }
+        catch (Exception exp)
+        {
+            throw exp;
+        }
     }
 }
