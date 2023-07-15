@@ -1,4 +1,5 @@
 ﻿namespace sc2_directstrike.client.Tests;
+using DTOs;
 
 public static class Chess
 {
