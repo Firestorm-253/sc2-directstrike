@@ -2,15 +2,13 @@ namespace sc2_directstrike.api;
 using Contexts;
 using Controllers;
 using Services;
+using System.Runtime.CompilerServices;
 
 public class Program
 {
-    static void Main(string[] args)
-    {
-        RunAPI(args);
-    }
+    public static IWebHostEnvironment Environment { get; set; }
 
-    static void RunAPI(string[] args)
+    static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +17,7 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        builder.Services.AddSingleton<DbContext>();
+        builder.Services.AddTransient<DbContext>();
 
         builder.Services.AddTransient<ReplayContext>();
         builder.Services.AddTransient<ReplayPlayerContext>();
@@ -36,34 +34,11 @@ public class Program
         //{
         //});
 
-        ConnectDb(app);
-
         app.UseHttpsRedirection();
 
         app.MapControllers();
 
+        Program.Environment = app.Environment;
         app.Run();
-    }
-
-    public static void ConnectDb(WebApplication app)
-    {
-        using var scope = app.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
-
-        var privatData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText("privatdata.json"))!;
-
-        string dbName = string.Empty;
-        if (app.Environment.IsProduction())
-        {
-            dbName = "sc2_directstrike";
-        }
-        else if (app.Environment.IsDevelopment())
-        {
-            dbName = "sc2_directstrike_dev";
-        }
-
-        dbContext.Connect("server90.hostfactory.ch", 3306, dbName,
-            user: privatData["user"],
-            password: privatData["password"]);
     }
 }

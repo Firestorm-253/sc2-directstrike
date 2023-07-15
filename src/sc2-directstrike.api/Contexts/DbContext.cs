@@ -15,6 +15,27 @@ public class DbContext
     public DbContext(IServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
+
+        this.ConnectDb();
+    }
+
+    public void ConnectDb()
+    {
+        var privatData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText("privatdata.json"))!;
+
+        string dbName = string.Empty;
+        if (Program.Environment.IsProduction())
+        {
+            dbName = "sc2_directstrike";
+        }
+        else if (Program.Environment.IsDevelopment())
+        {
+            dbName = "sc2_directstrike_dev";
+        }
+
+        this.Connect("server90.hostfactory.ch", 3306, dbName,
+            user: privatData["user"],
+            password: privatData["password"]);
     }
 
     public void Connect(string server, int port, string database, string user, string password)
