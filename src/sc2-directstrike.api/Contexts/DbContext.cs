@@ -58,21 +58,28 @@ public class DbContext
 
         var entries = new List<Dictionary<string, object>>();
 
-        using var dataReader = await command.ExecuteReaderAsync();
-        var columns = await dataReader.GetColumnSchemaAsync();
-
-        while (await dataReader.ReadAsync())
+        try
         {
-            var values = new object[dataReader.FieldCount];
-            dataReader.GetValues(values);
+            using var dataReader = await command.ExecuteReaderAsync();
+            var columns = await dataReader.GetColumnSchemaAsync();
 
-            var entry = new Dictionary<string, object>();
-            for (int i = 0; i < values.Length; i++)
+            while (await dataReader.ReadAsync())
             {
-                entry.Add(columns[i].ColumnName, values[i]);
-            }
+                var values = new object[dataReader.FieldCount];
+                dataReader.GetValues(values);
 
-            entries.Add(entry);
+                var entry = new Dictionary<string, object>();
+                for (int i = 0; i < values.Length; i++)
+                {
+                    entry.Add(columns[i].ColumnName, values[i]);
+                }
+
+                entries.Add(entry);
+            }
+        }
+        catch (Exception exp)
+        {
+            throw exp;
         }
 
         return entries;
