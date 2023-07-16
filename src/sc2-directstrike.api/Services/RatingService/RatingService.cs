@@ -63,30 +63,38 @@ public partial class RatingService
         using var scope = this.serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        await dbContext.WriteToDb($"DELETE FROM ratings WHERE {PKTController.GetQuery(pkt)} ");
+        var pktId = (await dbContext.ReadFromDb(PKTController.GetQuery(pkt)))[0]["Id"];
+
+        await dbContext.WriteToDb($"DELETE FROM ratings WHERE PKT = '{pktId}' ");
 
         var playerRatings = this.playerRatings.SelectMany(x => x.Value.SelectMany(y => y.Value));
 
-        int chunck_size = Math.Min(1_000, playerRatings.Count());
+        int chunck_size = 1_000;
         for (int i = 0; i < playerRatings.Count(); i += chunck_size)
         {
             var allValues = new StringBuilder();
 
             for (int k = 0; k < chunck_size; k++)
             {
+                if (i + k >= playerRatings.Count())
+                {
+                    break;
+                }
+
                 var replayPlayerRating = playerRatings.ElementAt(i + k);
 
                 var values = new StringBuilder();
-                values.Append($"({PKTController.GetQuery(pkt)},");
+                if (k > 0)
+                {
+                    values.Append(',');
+                }
+
+                values.Append($"('{pktId}',");
                 values.Append($"'{replayPlayerRating.ReplayPlayerId}',");
                 values.Append($"'{replayPlayerRating.RatingBefore}',");
                 values.Append($"'{replayPlayerRating.RatingAfter}',");
                 values.Append($"'{replayPlayerRating.DeviationBefore}',");
                 values.Append($"'{replayPlayerRating.DeviationAfter}')");
-                if (k < chunck_size - 1)
-                {
-                    values.Append(',');
-                }
 
                 allValues.Append(values);
             }
