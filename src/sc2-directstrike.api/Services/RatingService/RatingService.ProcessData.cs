@@ -57,6 +57,16 @@ public partial class RatingService
             var lastReplayPlayer = this.replayPlayers[lastReplayPlayer_rating.ReplayPlayerId];
             var lastReplayPlayer_Replay = replays[lastReplayPlayer.ReplayId];
 
+
+            if (float.IsNaN(lastReplayPlayer_rating.RatingAfter) || lastReplayPlayer_rating.RatingAfter == 0)
+            {
+                throw new Exception("NAN");
+            }
+            if (float.IsNaN(lastReplayPlayer_rating.DeviationAfter) || lastReplayPlayer_rating.DeviationAfter == 0)
+            {
+                throw new Exception("NAN");
+            }
+
             playerData.TimeSinceLastGame = replayData.Replay.GameTime - lastReplayPlayer_Replay.GameTime;
             playerData.Rating = lastReplayPlayer_rating.RatingAfter;
             playerData.Deviation = lastReplayPlayer_rating.DeviationAfter;

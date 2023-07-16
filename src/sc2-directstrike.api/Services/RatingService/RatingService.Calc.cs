@@ -37,6 +37,15 @@ public partial class RatingService
             ratingOptions
             );
 
+        if (double.IsNaN(ratingAfter.Mean) || ratingAfter.Mean == 0)
+        {
+            throw new Exception("NAN");
+        }
+        if (double.IsNaN(ratingAfter.Deviation) || ratingAfter.Deviation == 0)
+        {
+            throw new Exception("NAN");
+        }
+
         playerData.ReplayPlayerRating.RatingAfter = (float)ratingAfter.Mean;
         playerData.ReplayPlayerRating.DeviationAfter = (float)ratingAfter.Deviation;
 
@@ -58,6 +67,15 @@ public partial class RatingService
             playerData.IsLeaver,
             ratingOptions
             );
+
+        if (double.IsNaN(ratingAfter.Mean) || ratingAfter.Mean == 0)
+        {
+            throw new Exception("NAN");
+        }
+        if (double.IsNaN(ratingAfter.Deviation) || ratingAfter.Deviation == 0)
+        {
+            throw new Exception("NAN");
+        }
 
         playerData.ReplayPlayerRating.RatingAfter = (float)ratingAfter.Mean;
         playerData.ReplayPlayerRating.DeviationAfter = (float)ratingAfter.Deviation;
