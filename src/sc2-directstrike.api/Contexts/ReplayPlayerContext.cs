@@ -24,7 +24,7 @@ public class ReplayPlayerContext
         string query =
             $"SELECT {string.Join(", ", selects)} " +
             $"FROM {Table} " +
-            $"WHERE PKT = '{pkt}' ";
+            $"WHERE PKT = {PKTController.GetQuery(pkt)} ";
 
         if (conditions.Any())
         {
