@@ -5,7 +5,7 @@ using System.Text;
 
 namespace sc2_directstrike.api.Contexts;
 using DTOs;
-using sc2_directstrike.api.Controllers;
+using Controllers;
 
 public class DbContext
 {
