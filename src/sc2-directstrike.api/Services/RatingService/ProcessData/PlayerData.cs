@@ -6,13 +6,15 @@ public record PlayerData
 {
     public PlayerData(Replay replay, ReplayPlayer replayPlayer)
     {
-        ReplayPlayer = replayPlayer;
-        Deltas = new();
+        this.ReplayPlayer = replayPlayer;
+        this.Deltas = new();
+        this.ReplayPlayerRating = new ReplayPlayerRating() with { ReplayPlayerId = replayPlayer.Id };
 
-        IsLeaver = replayPlayer.Duration < replay.Duration - 90;
+        this.IsLeaver = replayPlayer.Duration < replay.Duration - 90;
     }
 
     public ReplayPlayer ReplayPlayer { get; init; }
+    public ReplayPlayerRating ReplayPlayerRating { get; init; }
 
     public bool IsLeaver { get; init; }
 

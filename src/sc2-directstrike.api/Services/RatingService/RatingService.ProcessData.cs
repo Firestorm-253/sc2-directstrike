@@ -49,16 +49,17 @@ public partial class RatingService
                                ReplayData replayData,
                                RatingOptions ratingOptions)
     {
-        var replayPlayers = playerRatings[replayData.Replay.GameMode][playerData.ReplayPlayer.PlayerId];
+        var playerRatings = this.playerRatings[replayData.Replay.GameMode][playerData.ReplayPlayer.PlayerId];
 
-        if (replayPlayers.Any())
+        if (playerRatings.Any())
         {
-            var lastReplayPlayer = replayPlayers.Last();
+            var lastReplayPlayer_rating = playerRatings.Last();
+            var lastReplayPlayer = this.replayPlayers[lastReplayPlayer_rating.ReplayPlayerId];
             var lastReplayPlayer_Replay = replays[lastReplayPlayer.ReplayId];
 
             playerData.TimeSinceLastGame = replayData.Replay.GameTime - lastReplayPlayer_Replay.GameTime;
-            playerData.Rating = lastReplayPlayer.RatingAfter;
-            playerData.Deviation = lastReplayPlayer.DeviationAfter;
+            playerData.Rating = lastReplayPlayer_rating.RatingAfter;
+            playerData.Deviation = lastReplayPlayer_rating.DeviationAfter;
         }
         else
         {
@@ -70,9 +71,9 @@ public partial class RatingService
         var decayFactor = GetDecayFactor(playerData.TimeSinceLastGame, ratingOptions);
         playerData.Deviation = (float)Math.Min(ratingOptions.StandardPlayerDeviation, playerData.Deviation * decayFactor);
 
-        playerData.ReplayPlayer.RatingBefore = playerData.Rating;
-        playerData.ReplayPlayer.DeviationBefore = playerData.Deviation;
+        playerData.ReplayPlayerRating.RatingBefore = playerData.Rating;
+        playerData.ReplayPlayerRating.DeviationBefore = playerData.Deviation;
 
-        playerRatings[replayData.Replay.GameMode][playerData.ReplayPlayer.PlayerId].Add(playerData.ReplayPlayer);
+        this.playerRatings[replayData.Replay.GameMode][playerData.ReplayPlayer.PlayerId].Add(playerData.ReplayPlayerRating);
     }
 }
