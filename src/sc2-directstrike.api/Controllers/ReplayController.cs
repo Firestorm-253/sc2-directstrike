@@ -102,7 +102,7 @@ public class ReplayController : ControllerBase
         string query =
             $"DELETE " +
             $"FROM {ReplayContext.Table} " +
-            $"WHERE PKT = '{pkt}' ";
+            $"WHERE PKT = {PKTController.GetQuery(pkt)} ";
 
         if (gameMode != null)
         {
@@ -123,7 +123,7 @@ public class ReplayController : ControllerBase
         using var scope = this.serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        await dbContext.WriteToDb($"DELETE FROM {ReplayContext.Table} WHERE PKT = '{pkt}' AND Id = '{id}' ");
+        await dbContext.WriteToDb($"DELETE FROM {ReplayContext.Table} WHERE PKT = {PKTController.GetQuery(pkt)} AND Id = '{id}' ");
     }
 
 

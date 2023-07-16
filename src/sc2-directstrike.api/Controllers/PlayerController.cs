@@ -80,7 +80,7 @@ public class PlayerController : ControllerBase
         string query =
             $"DELETE " +
             $"FROM {PlayerContext.Table} " +
-            $"WHERE PKT = '{pkt}' ";
+            $"WHERE PKT = {PKTController.GetQuery(pkt)} ";
 
         if (name != null)
         {
@@ -105,7 +105,7 @@ public class PlayerController : ControllerBase
         using var scope = this.serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        await dbContext.WriteToDb($"DELETE FROM {PlayerContext.Table} WHERE PKT = '{pkt}' AND Id = '{id}' ");
+        await dbContext.WriteToDb($"DELETE FROM {PlayerContext.Table} WHERE PKT = {PKTController.GetQuery(pkt)} AND Id = '{id}' ");
     }
 
 
@@ -113,7 +113,7 @@ public class PlayerController : ControllerBase
     {
         try
         {
-            var result = await dbContext.ReadFromDb($"SELECT * FROM {PlayerContext.Table} WHERE PKT='{pkt}' AND InGameId='{postPlayer.InGameId}'")!;
+            var result = await dbContext.ReadFromDb($"SELECT * FROM {PlayerContext.Table} WHERE PKT ={PKTController.GetQuery(pkt)} AND InGameId='{postPlayer.InGameId}'")!;
             if (result.Any())
             {
                 return result.Single()!;
