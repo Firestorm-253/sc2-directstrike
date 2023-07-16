@@ -133,7 +133,7 @@ public class DbContext
     public async Task UpdateDb(string pkt, string table, Dictionary<string, object> entry)
     {
         var entries = new StringBuilder();
-        var conditions = $"WHERE PKT={PKTController.GetQuery(pkt)} AND Id='{entry["Id"]}'";
+        var conditions = $"WHERE PKT = {PKTController.GetQuery(pkt)} AND Id = '{entry["Id"]}'";
 
         for (int i = 1; i < entry.Count; i++)
         {
@@ -148,18 +148,7 @@ public class DbContext
         }
 
         await WriteToDb($"UPDATE {table} " +
-                             $"SET {entries} " +
-                             $"{conditions}");
-    }
-
-    public static string AddCondition(string query, string name, object? value)
-    {
-        if (value == null)
-        {
-            return string.Empty;
-        }
-
-        string connectorString = !query.Contains("WHERE") ? "WHERE" : "AND";
-        return $"{connectorString} {name}='{value}' ";
+                        $"SET {entries} " +
+                        $"{conditions}");
     }
 }
