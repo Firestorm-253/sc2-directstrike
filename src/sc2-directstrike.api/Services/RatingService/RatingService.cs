@@ -3,6 +3,9 @@ using DTOs;
 using Contexts;
 using Data.RatingService.ProcessData;
 using Data.RatingService;
+using System.Text;
+using System.Linq;
+using sc2_directstrike.api.Controllers;
 
 public partial class RatingService
 {
@@ -60,25 +63,39 @@ public partial class RatingService
         using var scope = this.serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        // ToDo Update all elements in 1 command?
-        foreach (var mode in this.playerRatings.Keys)
-        {
-            foreach (var playerId in this.playerRatings[mode].Keys)
-            {
-                var replayPlayer_ratings = this.playerRatings[mode][playerId];
+        await dbContext.WriteToDb($"DELETE FROM ratings WHERE {PKTController.GetQuery(pkt)} ");
 
-                foreach (var replayPlayerRating in replayPlayer_ratings)
+        var playerRatings = this.playerRatings.SelectMany(x => x.Value.SelectMany(y => y.Value));
+
+        int chunck_size = Math.Min(1_000, playerRatings.Count());
+        for (int i = 0; i < playerRatings.Count(); i += chunck_size)
+        {
+            var allValues = new StringBuilder();
+
+            for (int k = 0; k < chunck_size; k++)
+            {
+                var replayPlayerRating = playerRatings.ElementAt(i + k);
+
+                var values = new StringBuilder();
+                values.Append($"({PKTController.GetQuery(pkt)},");
+                values.Append($"'{replayPlayerRating.ReplayPlayerId}',");
+                values.Append($"'{replayPlayerRating.RatingBefore}',");
+                values.Append($"'{replayPlayerRating.RatingAfter}',");
+                values.Append($"'{replayPlayerRating.DeviationBefore}',");
+                values.Append($"'{replayPlayerRating.DeviationAfter}')");
+                if (k < chunck_size - 1)
                 {
-                    if (insert)
-                    {
-                        await dbContext.WriteToDb(pkt, "ratings", replayPlayerRating);
-                    }
-                    else
-                    {
-                        await dbContext.UpdateDb(pkt, "ratings", replayPlayerRating);
-                    }
+                    values.Append(',');
                 }
+
+                allValues.Append(values);
             }
+
+            string query =
+                $"INSERT INTO ratings(PKT,ReplayPlayerId,RatingBefore,RatingAfter,DeviationBefore,DeviationAfter) " +
+                $"VALUES {allValues} ";
+
+            await dbContext.WriteToDb(query);
         }
     }
 
@@ -93,11 +110,13 @@ public partial class RatingService
 
             if (replayData.Team1.Players.Length != replayData.Team2.Players.Length)
             {
-                throw new Exception("ERROR: Unequal Teams!");
+                continue;
+                //throw new Exception("ERROR: Unequal Teams!");
             }
             if (!replayData.Team1.IsWinner && !replayData.Team2.IsWinner)
             {
-                throw new Exception("ERROR: No Winner!");
+                continue;
+                //throw new Exception("ERROR: No Winner!");
             }
 
             this.ProcessReplay(replayData, RatingOptions.Default);
