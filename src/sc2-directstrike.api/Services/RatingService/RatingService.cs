@@ -127,7 +127,7 @@ public partial class RatingService
                 //throw new Exception("ERROR: No Winner!");
             }
 
-            this.ProcessReplay(replayData, RatingOptions.Default);
+            this.ProcessReplay(replayData, RatingOptions.Default.Get(replayData.Team1.Players.Length + replayData.Team2.Players.Length));
         }
 
         await UpdateRatings(pkt);
