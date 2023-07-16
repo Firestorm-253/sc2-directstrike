@@ -8,7 +8,7 @@ public static class Chess
 
     public static void Run()
     {
-        var apiCommunicator = new ApiCommunicator(localEP);
+        var apiCommunicator = new ApiCommunicator(publicEP);
         string pkt = apiCommunicator.Get<string>("pkt")!;
 
         var allReplayChunks = new List<List<PostReplay>>();
@@ -29,7 +29,10 @@ public static class Chess
             sum += replayChunk.Count;
 
             var currentTries = 0;
-            while (!apiCommunicator.Post($"{pkt}/replays", replayChunk.ToArray()).GetAwaiter().GetResult() && currentTries++ < 10) ;
+            while (!apiCommunicator.Post($"{pkt}/replays", replayChunk.ToArray()).GetAwaiter().GetResult() && currentTries++ < 10)
+            {
+                Thread.Sleep(20000);
+            }
             Console.WriteLine($"{sum}/{(allReplayChunks.Count * replayChunk.Count)}");
         }
         Console.WriteLine("Finished");
