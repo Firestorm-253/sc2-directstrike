@@ -8,7 +8,7 @@ public static class Chess
 
     public static void Run()
     {
-        var apiCommunicator = new ApiCommunicator(publicEP);
+        var apiCommunicator = new ApiCommunicator(localEP);
         string pkt = apiCommunicator.Get<string>("pkt")!;
 
         var allReplayChunks = new List<List<PostReplay>>();
@@ -27,7 +27,9 @@ public static class Chess
         foreach (var replayChunk in allReplayChunks)
         {
             sum += replayChunk.Count;
-            apiCommunicator.Post($"{pkt}/replays", replayChunk.ToArray()).Wait();
+
+            var currentTries = 0;
+            while (!apiCommunicator.Post($"{pkt}/replays", replayChunk.ToArray()).GetAwaiter().GetResult() && currentTries++ < 10) ;
             Console.WriteLine($"{sum}/{(allReplayChunks.Count * replayChunk.Count)}");
         }
         Console.WriteLine("Finished");
@@ -66,8 +68,14 @@ public static class Chess
             {
                 continue;
             }
+
             var whitePlayerName = infos["White"].Replace("'", " ");
             var blackPlayerName = infos["Black"].Replace("'", " ");
+
+            if (whitePlayerName == blackPlayerName)
+            {
+                continue;
+            }
 
             if (!allPlayers.ContainsKey(whitePlayerName))
             {

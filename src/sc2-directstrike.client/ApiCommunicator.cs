@@ -36,13 +36,14 @@ public class ApiCommunicator
         return default;
     }
 
-    public async Task Post<T>(string requestUrl, T[] objs)
+    public async Task<bool> Post<T>(string requestUrl, T[] objs)
     {
         var response = await client.PostAsJsonAsync(requestUrl, objs);
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("ERROR: Post failed!");
+            await Console.Out.WriteLineAsync("ERROR: Post failed!");
         }
+        return response.IsSuccessStatusCode;
     }
 
     public void Delete(string requestUrl)
