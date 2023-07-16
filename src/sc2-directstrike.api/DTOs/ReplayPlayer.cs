@@ -13,11 +13,6 @@ public record ReplayPlayer
     public uint Result { get; init; } // 0-Loss, 1-Win
     public uint Duration { get; init; }
 
-    public float RatingBefore { get; set; }
-    public float RatingAfter { get; set; }
-    public float DeviationBefore { get; set; }
-    public float DeviationAfter { get; set; }
-
     public string Commander { get; init; } = null!;
 
 
@@ -32,11 +27,6 @@ public record ReplayPlayer
             { "Position", replayPlayer.Position },
             { "Result", replayPlayer.Result },
             { "Duration", replayPlayer.Duration },
-
-            { "RatingBefore", replayPlayer.RatingBefore },
-            { "RatingAfter", replayPlayer.RatingAfter },
-            { "DeviationBefore", replayPlayer.DeviationBefore },
-            { "DeviationAfter", replayPlayer.DeviationAfter },
 
             { "Commander", replayPlayer.Commander },
         };
@@ -58,11 +48,6 @@ public record ReplayPlayer
             Position = (uint)entry["Position"],
             Result = (uint)entry["Result"],
             Duration = (uint)entry["Duration"],
-
-            RatingBefore = (float)entry["RatingBefore"],
-            RatingAfter = (float)entry["RatingAfter"],
-            DeviationBefore = (float)entry["DeviationBefore"],
-            DeviationAfter = (float)entry["DeviationAfter"],
 
             Commander = (string)entry["Commander"],
         };

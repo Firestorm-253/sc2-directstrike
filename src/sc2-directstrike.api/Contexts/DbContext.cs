@@ -5,6 +5,7 @@ using System.Text;
 
 namespace sc2_directstrike.api.Contexts;
 using DTOs;
+using sc2_directstrike.api.Controllers;
 
 public class DbContext
 {
@@ -107,10 +108,10 @@ public class DbContext
         return index!.Value;
     }
 
-    public async Task<ulong> WriteToDb(string pkt, string route, Dictionary<string, object> dict)
+    public async Task<ulong> WriteToDb(string pkt, string table, Dictionary<string, object> dict)
     {
         var names = new StringBuilder("PKT, ");
-        var values = new StringBuilder($"'{pkt}', ");
+        var values = new StringBuilder($"{PKTController.GetQuery(pkt)}, ");
 
         foreach (var keyValuePair in dict)
         {
@@ -125,14 +126,14 @@ public class DbContext
         names.Remove(names.Length - 2, 2);
         values.Remove(values.Length - 2, 2);
 
-        return await WriteToDb($"INSERT INTO {route} ({names}) " +
+        return await WriteToDb($"INSERT INTO {table} ({names}) " +
                                $"VALUES ({values}) ");
     }
 
-    public async Task UpdateDb(string pkt, string route, Dictionary<string, object> entry)
+    public async Task UpdateDb(string pkt, string table, Dictionary<string, object> entry)
     {
         var entries = new StringBuilder();
-        var conditions = $"WHERE PKT='{pkt}' AND Id='{entry["Id"]}'";
+        var conditions = $"WHERE PKT = {PKTController.GetQuery(pkt)} AND Id = '{entry["Id"]}'";
 
         for (int i = 1; i < entry.Count; i++)
         {
@@ -146,19 +147,8 @@ public class DbContext
             }
         }
 
-        await WriteToDb($"UPDATE {route} " +
-                             $"SET {entries} " +
-                             $"{conditions}");
-    }
-
-    public static string AddCondition(string query, string name, object? value)
-    {
-        if (value == null)
-        {
-            return string.Empty;
-        }
-
-        string connectorString = !query.Contains("WHERE") ? "WHERE" : "AND";
-        return $"{connectorString} {name}='{value}' ";
+        await WriteToDb($"UPDATE {table} " +
+                        $"SET {entries} " +
+                        $"{conditions}");
     }
 }

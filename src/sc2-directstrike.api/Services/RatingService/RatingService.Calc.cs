@@ -37,8 +37,8 @@ public partial class RatingService
             ratingOptions
             );
 
-        playerData.ReplayPlayer.RatingAfter = (float)ratingAfter.Mean;
-        playerData.ReplayPlayer.DeviationAfter = (float)ratingAfter.Deviation;
+        playerData.ReplayPlayerRating.RatingAfter = (float)ratingAfter.Mean;
+        playerData.ReplayPlayerRating.DeviationAfter = (float)ratingAfter.Deviation;
 
         playerData.Deltas.Rating = (float)ratingAfter.Mean - playerData.Rating;
         playerData.Deltas.Deviation = (float)ratingAfter.Deviation - playerData.Deviation;
@@ -59,8 +59,8 @@ public partial class RatingService
             ratingOptions
             );
 
-        playerData.ReplayPlayer.RatingAfter = (float)ratingAfter.Mean;
-        playerData.ReplayPlayer.DeviationAfter = (float)ratingAfter.Deviation;
+        playerData.ReplayPlayerRating.RatingAfter = (float)ratingAfter.Mean;
+        playerData.ReplayPlayerRating.DeviationAfter = (float)ratingAfter.Deviation;
 
         playerData.Deltas.Rating = (float)ratingAfter.Mean - playerData.Rating;
         playerData.Deltas.Deviation = (float)ratingAfter.Deviation - playerData.Deviation;

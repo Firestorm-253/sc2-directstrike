@@ -3,14 +3,18 @@ using DTOs;
 using Contexts;
 using Data.RatingService.ProcessData;
 using Data.RatingService;
+using System.Text;
+using System.Linq;
+using sc2_directstrike.api.Controllers;
 
 public partial class RatingService
 {
     private readonly IServiceProvider serviceProvider;
 
-    private Dictionary<ulong, Replay> replays = null!;
-    private Dictionary<ulong, List<ReplayPlayer>> replayPlayers = null!;
-    private Dictionary<string, Dictionary<ulong, List<ReplayPlayer>>> playerRatings = null!;
+    private Dictionary<ulong, Replay> replays = null!; // [ReplayId] -> replay
+    private Dictionary<ulong, ReplayPlayer> replayPlayers = null!; // [ReplayPlayerId] -> replayPlayer
+    private Dictionary<ulong, List<ReplayPlayer>> replays_replayPlayers = null!; // [ReplayId] -> replayPlayers
+    private Dictionary<string, Dictionary<ulong, List<ReplayPlayerRating>>> playerRatings = null!; // [GameMode][PlayerId] -> replayPlayerRatings
 
     public RatingService(IServiceProvider serviceProvider)
     {
@@ -26,11 +30,11 @@ public partial class RatingService
         //var playerContext = scope.ServiceProvider.GetRequiredService<PlayerContext>();
 
         this.replays = (await replayContext.Get(pkt, Array.Empty<string>(), "*")).OrderBy(r => r.GameTime).ToDictionary(r => r.Id);
-        var replayPlayers = (await replayPlayerContext.Get(pkt, Array.Empty<string>(), "*")).ToDictionary(rp => rp.Id);
+        this.replayPlayers = (await replayPlayerContext.Get(pkt, Array.Empty<string>(), "*")).ToDictionary(rp => rp.Id);
         //var players = (await playerContext.Get(pkt, Array.Empty<string>(), "*")).ToDictionary(p => p.Id);
 
         this.playerRatings = new();
-        this.replayPlayers = new();
+        this.replays_replayPlayers = new();
 
         foreach (var ent_replayPlayer in replayPlayers)
         {
@@ -45,25 +49,53 @@ public partial class RatingService
             {
                 this.playerRatings[replay.GameMode].Add(replayPlayer.PlayerId, new());
             }
-            //this.playerRatings[replay.GameMode][replayPlayer.PlayerId].Add(replayPlayer);
 
-            if (!this.replayPlayers.ContainsKey(replayPlayer.ReplayId))
+            if (!this.replays_replayPlayers.ContainsKey(replayPlayer.ReplayId))
             {
-                this.replayPlayers.Add(replayPlayer.ReplayId, new());
+                this.replays_replayPlayers.Add(replayPlayer.ReplayId, new());
             }
-            this.replayPlayers[replayPlayer.ReplayId].Add(replayPlayer);
+            this.replays_replayPlayers[replayPlayer.ReplayId].Add(replayPlayer);
         }
     }
 
-    private async Task UpdateRatings(string pkt, IEnumerable<ReplayPlayer> replayPlayers)
+    private async Task UpdateRatings(string pkt, bool insert = true)
     {
         using var scope = this.serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        // ToDo Update all elements in 1 command?
-        foreach (var replayPlayer in replayPlayers)
+        await dbContext.WriteToDb($"DELETE FROM ratings WHERE {PKTController.GetQuery(pkt)} ");
+
+        var playerRatings = this.playerRatings.SelectMany(x => x.Value.SelectMany(y => y.Value));
+
+        int chunck_size = Math.Min(1_000, playerRatings.Count());
+        for (int i = 0; i < playerRatings.Count(); i += chunck_size)
         {
-            await dbContext.UpdateDb(pkt, ReplayPlayerContext.Table, replayPlayer);
+            var allValues = new StringBuilder();
+
+            for (int k = 0; k < chunck_size; k++)
+            {
+                var replayPlayerRating = playerRatings.ElementAt(i + k);
+
+                var values = new StringBuilder();
+                values.Append($"({PKTController.GetQuery(pkt)},");
+                values.Append($"'{replayPlayerRating.ReplayPlayerId}',");
+                values.Append($"'{replayPlayerRating.RatingBefore}',");
+                values.Append($"'{replayPlayerRating.RatingAfter}',");
+                values.Append($"'{replayPlayerRating.DeviationBefore}',");
+                values.Append($"'{replayPlayerRating.DeviationAfter}')");
+                if (k < chunck_size - 1)
+                {
+                    values.Append(',');
+                }
+
+                allValues.Append(values);
+            }
+
+            string query =
+                $"INSERT INTO ratings(PKT,ReplayPlayerId,RatingBefore,RatingAfter,DeviationBefore,DeviationAfter) " +
+                $"VALUES {allValues} ";
+
+            await dbContext.WriteToDb(query);
         }
     }
 
@@ -74,21 +106,23 @@ public partial class RatingService
         foreach (var ent_replay in this.replays)
         {
             var replay = ent_replay.Value;
-            var replayData = new ReplayData(replay, replayPlayers[replay.Id]);
+            var replayData = new ReplayData(replay, replays_replayPlayers[replay.Id]);
 
             if (replayData.Team1.Players.Length != replayData.Team2.Players.Length)
             {
-                throw new Exception("ERROR: Unequal Teams!");
+                continue;
+                //throw new Exception("ERROR: Unequal Teams!");
             }
             if (!replayData.Team1.IsWinner && !replayData.Team2.IsWinner)
             {
-                throw new Exception("ERROR: No Winner!");
+                continue;
+                //throw new Exception("ERROR: No Winner!");
             }
 
             this.ProcessReplay(replayData, RatingOptions.Default);
         }
 
-        await UpdateRatings(pkt, replayPlayers.SelectMany(re => re.Value));
+        await UpdateRatings(pkt);
     }
 
     private void ProcessReplay(ReplayData replayData, RatingOptions ratingOptions)
