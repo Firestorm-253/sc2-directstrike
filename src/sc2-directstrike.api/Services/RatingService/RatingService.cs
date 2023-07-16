@@ -63,7 +63,7 @@ public partial class RatingService
         using var scope = this.serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        await dbContext.WriteToDb($"DELETE FROM ratings WHERE {PKTController.GetQuery(pkt)} ");
+        await dbContext.WriteToDb($"DELETE FROM ratings WHERE PKT = {PKTController.GetQuery(pkt)} ");
 
         var playerRatings = this.playerRatings.SelectMany(x => x.Value.SelectMany(y => y.Value));
 
