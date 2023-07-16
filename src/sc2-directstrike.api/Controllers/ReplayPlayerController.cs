@@ -5,6 +5,7 @@ using System.Xml.Linq;
 namespace sc2_directstrike.api.Controllers;
 using DTOs;
 using Contexts;
+using MySqlConnector;
 
 [ApiController]
 [Route("{pkt}/" + ReplayPlayerContext.Table)]
@@ -111,7 +112,7 @@ public class ReplayPlayerController : ControllerBase
     }
 
 
-    public static async Task<ReplayPlayer> GenerateIncrementedReplay(string pkt, PostReplayPlayer postReplayPlayer, Replay replay, Player player, DbContext dbContext)
+    public static async Task<ReplayPlayer> GenerateIncrementedReplay(string pkt, PostReplayPlayer postReplayPlayer, Replay replay, Player player, DbContext dbContext, MySqlTransaction transaction)
     {
         try
         {
@@ -120,7 +121,7 @@ public class ReplayPlayerController : ControllerBase
                 ReplayId = replay.Id,
                 PlayerId = player.Id,
             };
-            ulong id = await dbContext.WriteToDb(pkt, ReplayPlayerContext.Table, replayPlayer);
+            ulong id = await dbContext.WriteToDb(pkt, ReplayPlayerContext.Table, replayPlayer, transaction);
 
             return replayPlayer with { Id = id };
         }

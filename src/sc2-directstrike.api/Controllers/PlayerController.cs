@@ -3,6 +3,7 @@
 namespace sc2_directstrike.api.Controllers;
 using DTOs;
 using Contexts;
+using MySqlConnector;
 
 [ApiController]
 [Route("{pkt}/" + PlayerContext.Table)]
@@ -109,18 +110,18 @@ public class PlayerController : ControllerBase
     }
 
 
-    public static async Task<Player> GenerateIncrementedPlayer(string pkt, PostPlayer postPlayer, DbContext dbContext)
+    public static async Task<Player> GenerateIncrementedPlayer(string pkt, PostPlayer postPlayer, DbContext dbContext, MySqlTransaction transaction)
     {
         try
         {
-            var result = await dbContext.ReadFromDb($"SELECT * FROM {PlayerContext.Table} WHERE PKT ={PKTController.GetQuery(pkt)} AND InGameId='{postPlayer.InGameId}'")!;
+            var result = await dbContext.ReadFromDb($"SELECT * FROM {PlayerContext.Table} WHERE PKT ={PKTController.GetQuery(pkt)} AND InGameId='{postPlayer.InGameId}'", transaction)!;
             if (result.Any())
             {
                 return result.Single()!;
             }
 
             Player player = postPlayer;
-            ulong id = await dbContext.WriteToDb(pkt, PlayerContext.Table, player);
+            ulong id = await dbContext.WriteToDb(pkt, PlayerContext.Table, player, transaction);
 
             return player with { Id = id };
         }
