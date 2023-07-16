@@ -53,9 +53,15 @@ public class DbContext
         Connection.Open();
     }
 
-    public async Task<List<Dictionary<string, object>>> ReadFromDb(string query)
+    public async Task<List<Dictionary<string, object>>> ReadFromDb(string query, MySqlTransaction? transaction = null)
     {
-        using var command = new MySqlCommand(query, this.Connection);
+        bool sharedTransaction = transaction != null;
+
+        if (!sharedTransaction)
+        {
+            transaction = await this.Connection.BeginTransactionAsync();
+        }
+        using var command = new MySqlCommand(query, this.Connection, transaction);
 
         var entries = new List<Dictionary<string, object>>();
 
@@ -80,17 +86,28 @@ public class DbContext
         }
         catch (Exception exp)
         {
+            await transaction!.RollbackAsync();
             throw exp;
+        }
+
+        if (!sharedTransaction)
+        {
+            await transaction!.CommitAsync();
         }
 
         return entries;
     }
 
-    public async Task<ulong> WriteToDb(string query)
+    public async Task<ulong> WriteToDb(string query, MySqlTransaction? transaction = null)
     {
         query += "; SELECT LAST_INSERT_ID();";
+        bool sharedTransaction = transaction != null;
 
-        using var transaction = await this.Connection.BeginTransactionAsync();
+        if (!sharedTransaction)
+        {
+            transaction = await this.Connection.BeginTransactionAsync();
+        }
+        
         using var command = new MySqlCommand(query, this.Connection, transaction);
 
         ulong? index = null;
@@ -100,15 +117,22 @@ public class DbContext
         }
         catch
         {
-            transaction.Rollback();
+            if (sharedTransaction)
+            {
+            }
+            await transaction!.RollbackAsync();
             throw;
         }
-        transaction.Commit();
+
+        if (!sharedTransaction)
+        {
+            await transaction!.CommitAsync();
+        }
 
         return index!.Value;
     }
 
-    public async Task<ulong> WriteToDb(string pkt, string table, Dictionary<string, object> dict)
+    public async Task<ulong> WriteToDb(string pkt, string table, Dictionary<string, object> dict, MySqlTransaction? transaction = null)
     {
         var names = new StringBuilder("PKT, ");
         var values = new StringBuilder($"{PKTController.GetQuery(pkt)}, ");
@@ -127,7 +151,7 @@ public class DbContext
         values.Remove(values.Length - 2, 2);
 
         return await WriteToDb($"INSERT INTO {table} ({names}) " +
-                               $"VALUES ({values}) ");
+                               $"VALUES ({values}) ", transaction);
     }
 
     public async Task UpdateDb(string pkt, string table, Dictionary<string, object> entry)

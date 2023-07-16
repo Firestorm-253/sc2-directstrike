@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace sc2_directstrike.api.Controllers;
 using DTOs;
 using Contexts;
+using MySqlConnector;
 
 [ApiController]
 [Route("{pkt}/" + ReplayContext.Table)]
@@ -67,24 +68,28 @@ public class ReplayController : ControllerBase
 
         using var scope = this.serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        using var transaction = await dbContext.Connection.BeginTransactionAsync();
 
         try
         {
             foreach (var postReplay in postReplays)
             {
-                Replay replay = await GenerateIncrementedReplay(pkt, postReplay, dbContext);
+                Replay replay = await GenerateIncrementedReplay(pkt, postReplay, dbContext, transaction);
 
                 foreach (var postReplayPlayer in postReplay.ReplayPlayers)
                 {
-                    Player player = await PlayerController.GenerateIncrementedPlayer(pkt, postReplayPlayer.Player, dbContext);
-                    ReplayPlayer replayPlayer = await ReplayPlayerController.GenerateIncrementedReplay(pkt, postReplayPlayer, replay, player, dbContext);
+                    Player player = await PlayerController.GenerateIncrementedPlayer(pkt, postReplayPlayer.Player, dbContext, transaction);
+                    ReplayPlayer replayPlayer = await ReplayPlayerController.GenerateIncrementedReplay(pkt, postReplayPlayer, replay, player, dbContext, transaction);
                 }
             }
         }
         catch (Exception exp)
         {
+            await transaction.RollbackAsync();
             throw exp;
         }
+
+        await transaction.CommitAsync();
     }
 
     [HttpDelete]
@@ -127,12 +132,12 @@ public class ReplayController : ControllerBase
     }
 
 
-    public static async Task<Replay> GenerateIncrementedReplay(string pkt, PostReplay postReplay, DbContext dbContext)
+    public static async Task<Replay> GenerateIncrementedReplay(string pkt, PostReplay postReplay, DbContext dbContext, MySqlTransaction transaction)
     {
         try
         {
             Replay replay = postReplay;
-            ulong id = await dbContext.WriteToDb(pkt, ReplayContext.Table, replay);
+            ulong id = await dbContext.WriteToDb(pkt, ReplayContext.Table, replay, transaction);
 
             return replay with { Id = id };
         }
