@@ -10,9 +10,21 @@ public static class GaussianElo
                                           bool isLeaver,
                                           RatingOptions ratingOptions)
     {
+        double zScore_1 = matchDist.Mean + (1 * matchDist.Deviation);
+
+        double deltaV2 = 0;
+        if (actualResult == 1)
+        {
+            deltaV2 += Math.Max(0, zScore_1);
+        }
+        else
+        {
+            deltaV2 += Math.Min(0, zScore_1);
+        }
+
         double delta = (actualResult - prediction) * ratingOptions.EloK * impact;
 
-        var info = Gaussian.ByMeanDeviation(rating.Mean + delta, matchDist.Deviation);
+        var info = Gaussian.ByMeanDeviation(rating.Mean + deltaV2, matchDist.Deviation);
         var ratingAfter = rating * info;
 
         if (isLeaver)
