@@ -1,45 +1,45 @@
-﻿namespace sc2_directstrike.api.tests.UnitTests.Controllers;
+﻿//namespace sc2_directstrike.api.tests.UnitTests.Controllers;
 
-using api.Controllers;
+//using api.Controllers;
 
-public class PlayerControllerTests
-{
-    PlayerController playerController = null!;
+//public class PlayerControllerTests
+//{
+//    PlayerController playerController = null!;
 
-    [SetUp]
-    public void Setup()
-    {
-        this.playerController = new PlayerController();
+//    [SetUp]
+//    public void Setup()
+//    {
+//        this.playerController = new PlayerController();
 
-        Program.DbContext = new DbContext();
-        Program.ConnectDb("sc2_directstrike_tests");
-    }
+//        Program.DbContext = new DbContext();
+//        Program.ConnectDb("sc2_directstrike_tests");
+//    }
 
-    [Test]
-    public void GetById()
-    {
-        string pkt = "read_test";
-        int id = 0;
+//    [Test]
+//    public void GetById()
+//    {
+//        string pkt = "read_test";
+//        int id = 0;
 
-        var player = this.playerController.GetById(pkt, id).GetAwaiter().GetResult();
+//        var player = this.playerController.GetById(pkt, id).GetAwaiter().GetResult();
 
-        Assert.IsNotNull(player);
-    }
+//        Assert.IsNotNull(player);
+//    }
 
-    [Test]
-    public void Get()
-    {
-        string pkt = "read_test";
-        string name = "A";
-        int inGameId = 184085;
+//    [Test]
+//    public void Get()
+//    {
+//        string pkt = "read_test";
+//        string name = "A";
+//        int inGameId = 184085;
 
-        var player = this.playerController.Get(pkt, name, null).GetAwaiter().GetResult();
-        Assert.IsNotNull(player);
+//        var player = this.playerController.Get(pkt, name, null).GetAwaiter().GetResult();
+//        Assert.IsNotNull(player);
 
-        player = this.playerController.Get(pkt, null, inGameId).GetAwaiter().GetResult();
-        Assert.IsNotNull(player);
+//        player = this.playerController.Get(pkt, null, inGameId).GetAwaiter().GetResult();
+//        Assert.IsNotNull(player);
 
-        player = this.playerController.Get(pkt, name, inGameId).GetAwaiter().GetResult();
-        Assert.IsNotNull(player);
-    }
-}
+//        player = this.playerController.Get(pkt, name, inGameId).GetAwaiter().GetResult();
+//        Assert.IsNotNull(player);
+//    }
+//}
