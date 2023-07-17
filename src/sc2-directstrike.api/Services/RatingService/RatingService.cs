@@ -69,7 +69,7 @@ public partial class RatingService
 
         var playerRatings = this.playerRatings.SelectMany(x => x.Value.SelectMany(y => y.Value));
 
-        int chunck_size = 1_000;
+        int chunck_size = 10_000;
         for (int i = 0; i < playerRatings.Count(); i += chunck_size)
         {
             var allValues = new StringBuilder();
@@ -127,7 +127,7 @@ public partial class RatingService
                 //throw new Exception("ERROR: No Winner!");
             }
 
-            this.ProcessReplay(replayData, RatingOptions.Default);
+            this.ProcessReplay(replayData, RatingOptions.Default.Get(replayData.Team1.Players.Length + replayData.Team2.Players.Length));
         }
 
         await UpdateRatings(pkt);
