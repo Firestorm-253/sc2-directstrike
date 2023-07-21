@@ -38,6 +38,17 @@ public class PlayerContext
                                                                             DbContext dbContext,
                                                                             MySqlConnector.MySqlTransaction? transaction = null)
     {
+        var players_list = players.ToList();
+
+        var existingPlayers = await dbContext.ReadFromDb($"SELECT * FROM {Table} WHERE PKT = {PKTController.GetQuery(pkt)}", transaction)!;
+        foreach (var existingPlayerDict in existingPlayers)
+        {
+            Player existingPlayer = existingPlayerDict!;
+            players_list.Add(existingPlayer);
+        }
+
+        players = players_list.DistinctBy(x => x.InGameId);
+
         ulong[] player_ids = await dbContext.InsertIncremental(pkt, Table, players, transaction);
         var players_inGameId = new Dictionary<ulong, Player>();
 

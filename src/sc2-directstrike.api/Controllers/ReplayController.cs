@@ -101,7 +101,7 @@ public class ReplayController : ControllerBase
             await replayPlayerContext.GenerateIncrementedReplayPlayers(
                 pkt,
                 postReplays,
-                replays,
+                incrementedReplays,
                 incrementedPlayers,
                 dbContext,
                 transaction);

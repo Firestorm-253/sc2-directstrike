@@ -103,13 +103,9 @@ public class DbContext
         {
             index = (ulong?)(await command.ExecuteScalarAsync());
         }
-        catch
+        catch (Exception ex)
         {
-            if (sharedTransaction)
-            {
-            }
-            await transaction!.RollbackAsync();
-            throw;
+            throw ex;
         }
 
         if (!sharedTransaction)
@@ -171,17 +167,20 @@ public class DbContext
 
     public async Task<ulong[]> InsertIncremental(string pkt, string table, IEnumerable<IAsDictionary> postReplays, MySqlConnector.MySqlTransaction? transaction = null)
     {
-        using var scope = serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        var pktId = (await this.ReadFromDb(PKTController.GetQuery(pkt), transaction))[0]["Id"];
 
         var names = new StringBuilder("PKT");
-        var values = new StringBuilder($"{PKTController.GetQuery(pkt)}");
+        var values = new StringBuilder();
 
         for (int i = 0; i < postReplays.Count(); i++)
         {
             var replayDict = postReplays.ElementAt(i).AsDictionary();
 
-            values.Append("(");
+            if (i != 0)
+            {
+                values.Append(',');
+            }
+            values.Append($"('{pktId}', ");
 
             for (int k = 1; k < replayDict.Count; k++)
             {
@@ -201,7 +200,7 @@ public class DbContext
             values.Append(")");
         }
 
-        ulong lastInsertedId = (await dbContext.ExecuteQuery($"INSERT INTO {table} ({names}) " +
+        ulong lastInsertedId = (await this.ExecuteQuery($"INSERT INTO {table} ({names}) " +
                                                              $"VALUES {values} ",
                                                              select_lastInsertedId: true,
                                                              transaction: transaction)).Value;
