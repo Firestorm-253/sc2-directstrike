@@ -2,7 +2,7 @@
 
 namespace sc2_directstrike.api.DTOs;
 
-public record ReplayPlayer
+public record ReplayPlayer : IAsDictionary
 {
     public ulong Id { get; init; }
     public ulong PlayerId { get; init; }
@@ -16,20 +16,23 @@ public record ReplayPlayer
     public string Commander { get; init; } = null!;
 
 
-    public static implicit operator Dictionary<string, object>(ReplayPlayer replayPlayer)
-        => new()
+    public Dictionary<string, object> AsDictionary()
+        => new Dictionary<string, object>()
         {
-            { "Id", replayPlayer.Id },
-            { "PlayerId", replayPlayer.PlayerId },
-            { "ReplayId", replayPlayer.ReplayId },
+            { "Id", this.Id },
+            { "PlayerId", this.PlayerId },
+            { "ReplayId", this.ReplayId },
 
-            { "Team", replayPlayer.Team },
-            { "Position", replayPlayer.Position },
-            { "Result", replayPlayer.Result },
-            { "Duration", replayPlayer.Duration },
+            { "Team", this.Team },
+            { "Position", this.Position },
+            { "Result", this.Result },
+            { "Duration", this.Duration },
 
-            { "Commander", replayPlayer.Commander },
+            { "Commander", this.Commander },
         };
+
+    public static implicit operator Dictionary<string, object>(ReplayPlayer replayPlayer)
+        => replayPlayer.AsDictionary();
 
     public static implicit operator ReplayPlayer?(Dictionary<string, object> entry)
     {

@@ -83,16 +83,19 @@ public class DbContext
         return entries;
     }
 
-    public async Task<ulong> WriteToDb(string query, MySqlTransaction? transaction = null)
+    public async Task<ulong?> ExecuteQuery(string query, bool select_lastInsertedId = true, MySqlTransaction? transaction = null)
     {
-        query += "; SELECT LAST_INSERT_ID();";
         bool sharedTransaction = transaction != null;
-
         if (!sharedTransaction)
         {
             transaction = await this.Connection.BeginTransactionAsync();
         }
-        
+
+        if (select_lastInsertedId)
+        {
+            query += "; SELECT LAST_INSERT_ID();";
+        }
+
         using var command = new MySqlCommand(query, this.Connection, transaction);
 
         ulong? index = null;
@@ -100,13 +103,9 @@ public class DbContext
         {
             index = (ulong?)(await command.ExecuteScalarAsync());
         }
-        catch
+        catch (Exception ex)
         {
-            if (sharedTransaction)
-            {
-            }
-            await transaction!.RollbackAsync();
-            throw;
+            throw ex;
         }
 
         if (!sharedTransaction)
@@ -114,7 +113,11 @@ public class DbContext
             await transaction!.CommitAsync();
         }
 
-        return index!.Value;
+        if (select_lastInsertedId)
+        {
+            return index!.Value;
+        }
+        return null;
     }
 
     public async Task<ulong> WriteToDb(string pkt, string table, Dictionary<string, object> dict, MySqlTransaction? transaction = null)
@@ -135,8 +138,8 @@ public class DbContext
         names.Remove(names.Length - 2, 2);
         values.Remove(values.Length - 2, 2);
 
-        return await WriteToDb($"INSERT INTO {table} ({names}) " +
-                               $"VALUES ({values}) ", transaction);
+        return (await ExecuteQuery($"INSERT INTO {table} ({names}) " +
+                                   $"VALUES ({values}) ", transaction: transaction)).Value;
     }
 
     public async Task UpdateDb(string pkt, string table, Dictionary<string, object> entry)
@@ -156,8 +159,57 @@ public class DbContext
             }
         }
 
-        await WriteToDb($"UPDATE {table} " +
-                        $"SET {entries} " +
-                        $"{conditions}");
+        await ExecuteQuery($"UPDATE {table} " +
+                           $"SET {entries} " +
+                           $"{conditions}");
+    }
+
+
+    public async Task<ulong[]> InsertIncremental(string pkt, string table, IEnumerable<IAsDictionary> postReplays, MySqlConnector.MySqlTransaction? transaction = null)
+    {
+        var pktId = (await this.ReadFromDb(PKTController.GetQuery(pkt), transaction))[0]["Id"];
+
+        var names = new StringBuilder("PKT");
+        var values = new StringBuilder();
+
+        for (int i = 0; i < postReplays.Count(); i++)
+        {
+            var replayDict = postReplays.ElementAt(i).AsDictionary();
+
+            if (i != 0)
+            {
+                values.Append(',');
+            }
+            values.Append($"('{pktId}', ");
+
+            for (int k = 1; k < replayDict.Count; k++)
+            {
+                var ent = replayDict.ElementAt(k);
+                if (i == 0)
+                {
+                    names.Append($", {ent.Key}");
+                }
+
+                if (k != 1)
+                {
+                    values.Append(", ");
+                }
+                values.Append($"'{ent.Value}'");
+            }
+
+            values.Append(")");
+        }
+
+        ulong lastInsertedId = (await this.ExecuteQuery($"INSERT INTO {table} ({names}) " +
+                                                             $"VALUES {values} ",
+                                                             select_lastInsertedId: true,
+                                                             transaction: transaction)).Value;
+
+        ulong[] ids = new ulong[postReplays.Count()];
+        for (int i = 0; i < ids.Length; i++)
+        {
+            ids[i] = lastInsertedId + (ulong)i;
+        }
+        return ids;
     }
 }
