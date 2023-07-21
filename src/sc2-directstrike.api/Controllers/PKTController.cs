@@ -35,7 +35,7 @@ public class PKTController : ControllerBase
             $"INSERT INTO pkts (PKT) " +
             $"VALUES ('{pkt}') ";
 
-        await dbContext.WriteToDb(query);
+        await dbContext.ExecuteQuery(query);
         return pkt;
     }
 
