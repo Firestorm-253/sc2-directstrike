@@ -106,10 +106,10 @@ public class ReplayController : ControllerBase
                 dbContext,
                 transaction);
         }
-        catch (Exception exp)
+        catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            throw exp;
+            throw ex;
         }
 
         await transaction.CommitAsync();
