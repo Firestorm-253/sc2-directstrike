@@ -84,6 +84,14 @@ public static class Chess
             {
                 continue;
             }
+            if (whitePlayerName.Contains("Computer"))
+            {
+                continue;
+            }
+            if (blackPlayerName.Contains("Computer"))
+            {
+                continue;
+            }
 
             if (!allPlayers.ContainsKey(whitePlayerName))
             {

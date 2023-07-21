@@ -13,6 +13,7 @@ public class ApiCommunicator
             BaseAddress = new Uri(endPoint)
         };
         client.DefaultRequestHeaders.Accept.Clear();
+        client.Timeout = TimeSpan.FromDays(1);
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
