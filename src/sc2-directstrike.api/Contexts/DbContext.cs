@@ -6,6 +6,7 @@ using System.Text;
 namespace sc2_directstrike.api.Contexts;
 using DTOs;
 using Controllers;
+using System.Text.Json;
 
 public class DbContext
 {
@@ -17,40 +18,24 @@ public class DbContext
     {
         this.serviceProvider = serviceProvider;
 
-        this.ConnectDb();
+        this.Connect();
     }
 
-    public void ConnectDb()
+    public void Connect()
     {
-        var privatData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText("privatdata.json"))!;
+        var dbData = JsonSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllText("dbData.json"))!;
+        var databases = JsonSerializer.Deserialize<Dictionary<string, string>>(dbData["databases"].ToString()!)!;
 
-        string dbName = string.Empty;
-        if (Program.Environment.IsProduction())
-        {
-            dbName = "sc2_directstrike";
-        }
-        else if (Program.Environment.IsDevelopment())
-        {
-            dbName = "sc2_directstrike_dev";
-        }
-
-        this.Connect("server90.hostfactory.ch", 3306, dbName,
-            user: privatData["user"],
-            password: privatData["password"]);
-    }
-
-    public void Connect(string server, int port, string database, string user, string password)
-    {
         var connectionStringBuilder = new MySqlConnectionStringBuilder
         {
-            { "server", server },
-            { "port", port },
-            { "database", database },
-            { "user", user },
-            { "password", password }
+            { "server", dbData["server"].ToString()! },
+            { "port", int.Parse(dbData["port"].ToString()!) },
+            { "database", databases[Program.Environment.EnvironmentName.ToLower()].ToString()! },
+            { "user", dbData["user"].ToString()! },
+            { "password", dbData["password"].ToString()! }
         };
-        Connection = new MySqlConnection(connectionStringBuilder.ConnectionString);
-        Connection.Open();
+        this.Connection = new MySqlConnection(connectionStringBuilder.ConnectionString);
+        this.Connection.Open();
     }
 
     public async Task<List<Dictionary<string, object>>> ReadFromDb(string query, MySqlTransaction? transaction = null)
