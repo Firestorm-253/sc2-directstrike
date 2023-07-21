@@ -133,12 +133,12 @@ public class DbContext
             }
 
             names.Append($"{keyValuePair.Key}, ");
-            values.Append($"'{keyValuePair.Value}', ");
+            values.Append($"'{keyValuePair.Value}',\n");
         }
         names.Remove(names.Length - 2, 2);
         values.Remove(values.Length - 2, 2);
 
-        return (await ExecuteQuery($"INSERT INTO {table} ({names}) " +
+        return (await ExecuteQuery($"INSERT INTO {table} ({names})\n" +
                                    $"VALUES ({values}) ", transaction: transaction)).Value;
     }
 
@@ -159,9 +159,9 @@ public class DbContext
             }
         }
 
-        await ExecuteQuery($"UPDATE {table} " +
-                           $"SET {entries} " +
-                           $"{conditions}");
+        await ExecuteQuery($"UPDATE {table}\n" +
+                           $"SET {entries}\n" +
+                           $"{conditions}\n");
     }
 
 
@@ -200,10 +200,10 @@ public class DbContext
             values.Append(")");
         }
 
-        ulong lastInsertedId = (await this.ExecuteQuery($"INSERT INTO {table} ({names}) " +
-                                                             $"VALUES {values} ",
-                                                             select_lastInsertedId: true,
-                                                             transaction: transaction)).Value;
+        ulong lastInsertedId = (await this.ExecuteQuery($"INSERT INTO {table} ({names})\n" +
+                                                        $"VALUES {values}\n",
+                                                        select_lastInsertedId: true,
+                                                        transaction: transaction)).Value;
 
         ulong[] ids = new ulong[postReplays.Count()];
         for (int i = 0; i < ids.Length; i++)
