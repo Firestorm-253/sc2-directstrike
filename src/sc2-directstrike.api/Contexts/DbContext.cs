@@ -182,5 +182,50 @@ public class DbContext
                            $"SET {entries} " +
                            $"{conditions}");
     }
+
+
+    public async Task<ulong[]> InsertIncremental(string pkt, string table, IEnumerable<IAsDictionary> postReplays, MySqlConnector.MySqlTransaction? transaction = null)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+
+        var names = new StringBuilder("PKT");
+        var values = new StringBuilder($"{PKTController.GetQuery(pkt)}");
+
+        for (int i = 0; i < postReplays.Count(); i++)
+        {
+            var replayDict = postReplays.ElementAt(i).AsDictionary();
+
+            values.Append("(");
+
+            for (int k = 1; k < replayDict.Count; k++)
+            {
+                var ent = replayDict.ElementAt(k);
+                if (i == 0)
+                {
+                    names.Append($", {ent.Key}");
+                }
+
+                if (k != 1)
+                {
+                    values.Append(", ");
+                }
+                values.Append($"'{ent.Value}'");
+            }
+
+            values.Append(")");
+        }
+
+        ulong lastInsertedId = (await dbContext.ExecuteQuery($"INSERT INTO {table} ({names}) " +
+                                                             $"VALUES {values} ",
+                                                             select_lastInsertedId: true,
+                                                             transaction: transaction)).Value;
+
+        ulong[] ids = new ulong[postReplays.Count()];
+        for (int i = 0; i < ids.Length; i++)
+        {
+            ids[i] = lastInsertedId + (ulong)i;
+        }
+        return ids;
     }
 }
