@@ -1,14 +1,16 @@
 ﻿namespace sc2_directstrike.client.Tests;
 using DTOs;
+using System.Diagnostics;
 
 public static class Chess
 {
-    const string localEP = "https://localhost:7045/";
+    const string localEP1 = "https://localhost:7045/";
+    const string localEP2 = "https://localhost:5001/";
     const string publicEP = "https://api.sc2-directstrike.com/";
 
     public static void Run()
     {
-        var apiCommunicator = new ApiCommunicator(publicEP);
+        var apiCommunicator = new ApiCommunicator(localEP2);
         string pkt = apiCommunicator.Get<string>("pkt")!;
 
         var allReplayChunks = new List<List<PostReplay>>();
@@ -17,10 +19,11 @@ public static class Chess
         string root = @"C:\Users\Zehnder\Downloads\KingBase2019-pgn";
         foreach (var file in Directory.GetFiles(root))
         {
+            var sw = Stopwatch.StartNew();
             var currentReplayCunks = LoadFromPGNs(file, allPlayers);
             allReplayChunks.AddRange(currentReplayCunks);
-
-            break; // debug
+            sw.Stop();
+            Console.WriteLine($"{Path.GetFileName(file)} -> {sw.ElapsedMilliseconds}ms");
         }
 
         var sum = 0;
@@ -28,12 +31,14 @@ public static class Chess
         {
             sum += replayChunk.Count;
 
+            var sw = Stopwatch.StartNew();
             var currentTries = 0;
             while (!apiCommunicator.Post($"{pkt}/replays", replayChunk.ToArray()).GetAwaiter().GetResult() && currentTries++ < 10)
             {
                 Thread.Sleep(20000);
             }
-            Console.WriteLine($"{sum}/{(allReplayChunks.Count * replayChunk.Count)}");
+            sw.Stop();
+            Console.WriteLine($"{sum}/{(allReplayChunks.Count * replayChunk.Count)} -> {sw.ElapsedMilliseconds}ms");
         }
         Console.WriteLine("Finished");
     }
@@ -91,15 +96,15 @@ public static class Chess
 
             var whitePlayer = new PostReplayPlayer(
                 new PostPlayer(allPlayers[whitePlayerName], whitePlayerName),
-                1, 1, uint.Parse(result[0].ToString()), int.MaxValue, string.Empty);
+                1, 1, uint.Parse(result[0].ToString()), int.MaxValue, "white");
             var blackPlayer = new PostReplayPlayer(
                 new PostPlayer(allPlayers[blackPlayerName], blackPlayerName),
-                2, 1, uint.Parse(result[2].ToString()), int.MaxValue, string.Empty);
+                2, 1, uint.Parse(result[2].ToString()), int.MaxValue, "black");
 
             var replay = new PostReplay(date, "Chess", int.MaxValue, new[] { whitePlayer, blackPlayer });
             replayChunk.Add(replay);
 
-            if (replayChunk.Count == 100)
+            if (replayChunk.Count == 1_000)
             {
                 allReplayChunks.Add(new List<PostReplay>(replayChunk));
                 replayChunk.Clear();
