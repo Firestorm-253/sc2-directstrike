@@ -32,4 +32,19 @@ public class ReplayContext
 
         return result.Select(entry => (Replay)entry!);
     }
+
+    public async Task<Replay[]> GenerateIncrementedReplays(string pkt,
+                                                           IEnumerable<Replay> replays,
+                                                           DbContext dbContext,
+                                                           MySqlConnector.MySqlTransaction? transaction = null)
+    {
+        ulong[] replay_ids = await dbContext.InsertIncremental(pkt, Table, replays, transaction);
+        var replays_array = replays.ToArray();
+
+        for (int i = 0; i < replays.Count(); i++)
+        {
+            replays_array[i] = replays_array[i] with { Id = replay_ids[i] };
+        }
+        return replays_array;
+    }
 }

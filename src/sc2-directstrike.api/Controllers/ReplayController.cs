@@ -67,21 +67,44 @@ public class ReplayController : ControllerBase
         }
 
         using var scope = this.serviceProvider.CreateScope();
+        var replayContext = scope.ServiceProvider.GetRequiredService<ReplayContext>();
+        var playerContext = scope.ServiceProvider.GetRequiredService<PlayerContext>();
+        var replayPlayerContext = scope.ServiceProvider.GetRequiredService<ReplayPlayerContext>();
+
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
         using var transaction = await dbContext.Connection.BeginTransactionAsync();
 
         try
         {
-            foreach (var postReplay in postReplays)
+            var replays = new Replay[postReplays.Count()];
+            var replayPackages = new (PostReplay, Replay)[replays.Length];
+            for (int i = 0; i < replays.Length; i++)
             {
-                Replay replay = await GenerateIncrementedReplay(pkt, postReplay, dbContext, transaction);
-
-                foreach (var postReplayPlayer in postReplay.ReplayPlayers)
-                {
-                    Player player = await PlayerController.GenerateIncrementedPlayer(pkt, postReplayPlayer.Player, dbContext, transaction);
-                    ReplayPlayer replayPlayer = await ReplayPlayerController.GenerateIncrementedReplay(pkt, postReplayPlayer, replay, player, dbContext, transaction);
-                }
+                replays[i] = postReplays.ElementAt(i);
+                replayPackages[i] = (postReplays.ElementAt(i), replays[i]);
             }
+
+            var incrementedReplays =
+                await replayContext.GenerateIncrementedReplays(
+                    pkt,
+                    replays,
+                    dbContext,
+                    transaction);
+
+            var incrementedPlayers =
+                await playerContext.GenerateIncrementedPlayers(
+                    pkt,
+                    postReplays.SelectMany(r => r.ReplayPlayers.Select(rp => (Player)rp.Player)),
+                    dbContext,
+                    transaction);
+
+            await replayPlayerContext.GenerateIncrementedReplayPlayers(
+                pkt,
+                postReplays,
+                replays,
+                incrementedPlayers,
+                dbContext,
+                transaction);
         }
         catch (Exception exp)
         {
@@ -114,7 +137,7 @@ public class ReplayController : ControllerBase
             query += $"AND GameMode = '{gameMode}' ";
         }
 
-        await dbContext.WriteToDb(query);
+        await dbContext.ExecuteQuery(query);
     }
 
     [HttpDelete("{id}")]
@@ -128,22 +151,6 @@ public class ReplayController : ControllerBase
         using var scope = this.serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        await dbContext.WriteToDb($"DELETE FROM {ReplayContext.Table} WHERE PKT = {PKTController.GetQuery(pkt)} AND Id = '{id}' ");
-    }
-
-
-    public static async Task<Replay> GenerateIncrementedReplay(string pkt, PostReplay postReplay, DbContext dbContext, MySqlTransaction transaction)
-    {
-        try
-        {
-            Replay replay = postReplay;
-            ulong id = await dbContext.WriteToDb(pkt, ReplayContext.Table, replay, transaction);
-
-            return replay with { Id = id };
-        }
-        catch (Exception exp)
-        {
-            throw exp;
-        }
+        await dbContext.ExecuteQuery($"DELETE FROM {ReplayContext.Table} WHERE PKT = {PKTController.GetQuery(pkt)} AND Id = '{id}' ");
     }
 }

@@ -32,4 +32,20 @@ public class PlayerContext
 
         return result.Select(entry => (Player)entry!);
     }
+
+    public async Task<Dictionary<ulong, Player>> GenerateIncrementedPlayers(string pkt,
+                                                                            IEnumerable<Player> players,
+                                                                            DbContext dbContext,
+                                                                            MySqlConnector.MySqlTransaction? transaction = null)
+    {
+        ulong[] player_ids = await dbContext.InsertIncremental(pkt, Table, players, transaction);
+        var players_inGameId = new Dictionary<ulong, Player>();
+
+        for (int i = 0; i < players.Count(); i++)
+        {
+            var player = players.ElementAt(i);
+            players_inGameId.Add(player.InGameId, player with { Id = player_ids[i] });
+        }
+        return players_inGameId;
+    }
 }
