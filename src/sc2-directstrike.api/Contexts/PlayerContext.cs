@@ -1,6 +1,7 @@
 ﻿namespace sc2_directstrike.api.Contexts;
 using DTOs;
 using Controllers;
+using System.Xml.Linq;
 
 public class PlayerContext
 {
@@ -38,25 +39,42 @@ public class PlayerContext
                                                                             DbContext dbContext,
                                                                             MySqlConnector.MySqlTransaction? transaction = null)
     {
-        var players_list = players.ToList();
-
-        var existingPlayers = await dbContext.ReadFromDb($"SELECT * FROM {Table} WHERE PKT = {PKTController.GetQuery(pkt)}", transaction)!;
-        foreach (var existingPlayerDict in existingPlayers)
+        var existingPlayers_inGameId = new Dictionary<ulong, Player>();
+        var existingPlayerDicts = await dbContext.ReadFromDb($"SELECT * FROM {Table} WHERE PKT = {PKTController.GetQuery(pkt)}", transaction)!;
+        foreach (var existingPlayerDict in existingPlayerDicts)
         {
             Player existingPlayer = existingPlayerDict!;
-            players_list.Add(existingPlayer);
+            existingPlayers_inGameId.Add(existingPlayer.InGameId, existingPlayer);
         }
 
-        players = players_list.DistinctBy(x => x.InGameId);
+        var players_list = players.ToList();
+        
+        foreach (var player in players)
+        {
+            if (existingPlayers_inGameId.ContainsKey(player.InGameId))
+            {
+                players_list.Remove(player);
+            }
+        }
 
-        ulong[] player_ids = await dbContext.InsertIncremental(pkt, Table, players, transaction);
+        ulong[] player_ids = await dbContext.InsertIncremental(pkt, Table, players_list, transaction);
         var players_inGameId = new Dictionary<ulong, Player>();
+
+        for (int i = 0; i < players_list.Count; i++)
+        {
+            players_inGameId.Add(players_list[i].InGameId, players_list[i] with { Id = player_ids[i] });
+        }
 
         for (int i = 0; i < players.Count(); i++)
         {
             var player = players.ElementAt(i);
-            players_inGameId.Add(player.InGameId, player with { Id = player_ids[i] });
+            
+            if (existingPlayers_inGameId.TryGetValue(player.InGameId, out var existingPlayer))
+            {
+                players_inGameId.TryAdd(player.InGameId, existingPlayer);
+            }
         }
+
         return players_inGameId;
     }
 }
