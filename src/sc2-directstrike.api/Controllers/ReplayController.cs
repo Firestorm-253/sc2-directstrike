@@ -94,7 +94,7 @@ public class ReplayController : ControllerBase
             var incrementedPlayers =
                 await playerContext.GenerateIncrementedPlayers(
                     pkt,
-                    postReplays.SelectMany(r => r.ReplayPlayers.Select(rp => (Player)rp.Player)),
+                    postReplays.SelectMany(r => r.ReplayPlayers.Select(rp => (Player)rp.Player)).DistinctBy(x => x.InGameId),
                     dbContext,
                     transaction);
 
