@@ -98,16 +98,19 @@ public class DbContext
         return entries;
     }
 
-    public async Task<ulong> WriteToDb(string query, MySqlTransaction? transaction = null)
+    public async Task<ulong?> ExecuteQuery(string query, bool select_lastInsertedId = true, MySqlTransaction? transaction = null)
     {
-        query += "; SELECT LAST_INSERT_ID();";
         bool sharedTransaction = transaction != null;
-
         if (!sharedTransaction)
         {
             transaction = await this.Connection.BeginTransactionAsync();
         }
-        
+
+        if (select_lastInsertedId)
+        {
+            query += "; SELECT LAST_INSERT_ID();";
+        }
+
         using var command = new MySqlCommand(query, this.Connection, transaction);
 
         ulong? index = null;
@@ -129,7 +132,11 @@ public class DbContext
             await transaction!.CommitAsync();
         }
 
-        return index!.Value;
+        if (select_lastInsertedId)
+        {
+            return index!.Value;
+        }
+        return null;
     }
 
     public async Task<ulong> WriteToDb(string pkt, string table, Dictionary<string, object> dict, MySqlTransaction? transaction = null)
@@ -150,8 +157,8 @@ public class DbContext
         names.Remove(names.Length - 2, 2);
         values.Remove(values.Length - 2, 2);
 
-        return await WriteToDb($"INSERT INTO {table} ({names}) " +
-                               $"VALUES ({values}) ", transaction);
+        return (await ExecuteQuery($"INSERT INTO {table} ({names}) " +
+                                   $"VALUES ({values}) ", transaction: transaction)).Value;
     }
 
     public async Task UpdateDb(string pkt, string table, Dictionary<string, object> entry)
@@ -171,8 +178,9 @@ public class DbContext
             }
         }
 
-        await WriteToDb($"UPDATE {table} " +
-                        $"SET {entries} " +
-                        $"{conditions}");
+        await ExecuteQuery($"UPDATE {table} " +
+                           $"SET {entries} " +
+                           $"{conditions}");
+    }
     }
 }
