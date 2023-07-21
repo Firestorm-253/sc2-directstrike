@@ -1,7 +1,4 @@
-﻿using System.Xml.Linq;
-using Microsoft.AspNetCore.Http;
-
-namespace sc2_directstrike.api.Contexts;
+﻿namespace sc2_directstrike.api.Contexts;
 using DTOs;
 using Controllers;
 
@@ -34,5 +31,31 @@ public class ReplayPlayerContext
         var result = await dbContext.ReadFromDb(query);
 
         return result.Select(entry => (ReplayPlayer)entry!);
+    }
+
+    public async Task GenerateIncrementedReplayPlayers(string pkt,
+                                                       IEnumerable<PostReplay> postReplays,
+                                                       Replay[] replays,
+                                                       Dictionary<ulong, Player> incrementedPlayers,
+                                                       DbContext dbContext,
+                                                       MySqlConnector.MySqlTransaction? transaction = null)
+    {
+        var replayPlayers = new List<ReplayPlayer>();
+        for (int i = 0; i < replays.Length; i++)
+        {
+            foreach (var postReplayPlayer in postReplays.ElementAt(i).ReplayPlayers)
+            {
+                var player = incrementedPlayers[postReplayPlayer.Player.InGameId];
+
+                var replayPlayer = ((ReplayPlayer)postReplayPlayer) with
+                {
+                    ReplayId = replays[i].Id,
+                    PlayerId = player.Id
+                };
+                replayPlayers.Add(replayPlayer);
+            }
+        }
+        
+        await dbContext.InsertIncremental(pkt, Table, replayPlayers, transaction);
     }
 }

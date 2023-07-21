@@ -65,7 +65,7 @@ public partial class RatingService
 
         var pktId = (await dbContext.ReadFromDb(PKTController.GetQuery(pkt)))[0]["Id"];
 
-        await dbContext.WriteToDb($"DELETE FROM ratings WHERE PKT = '{pktId}' ");
+        await dbContext.ExecuteQuery($"DELETE FROM ratings WHERE PKT = '{pktId}' ");
 
         var playerRatings = this.playerRatings.SelectMany(x => x.Value.SelectMany(y => y.Value));
 
@@ -103,7 +103,7 @@ public partial class RatingService
                 $"INSERT INTO ratings(PKT,ReplayPlayerId,RatingBefore,RatingAfter,DeviationBefore,DeviationAfter) " +
                 $"VALUES {allValues} ";
 
-            await dbContext.WriteToDb(query);
+            await dbContext.ExecuteQuery(query);
         }
     }
 

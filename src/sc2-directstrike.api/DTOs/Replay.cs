@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace sc2_directstrike.api.DTOs;
 
-public record Replay
+public record Replay : IAsDictionary
 {
     public ulong Id { get; init; }
     public DateTime GameTime { get; init; }
@@ -10,14 +10,17 @@ public record Replay
     public uint Duration { get; init; }
 
 
-    public static implicit operator Dictionary<string, object>(Replay replay)
-        => new()
+    public Dictionary<string, object> AsDictionary()
+        => new Dictionary<string, object>()
         {
-            { "Id", replay.Id },
-            { "GameTime", replay.GameTime.ToString("yyyy-MM-dd hh:mm:ss") },
-            { "GameMode", replay.GameMode },
-            { "Duration", replay.Duration },
+            { "Id", this.Id },
+            { "GameTime", this.GameTime.ToString("yyyy-MM-dd hh:mm:ss") },
+            { "GameMode", this.GameMode },
+            { "Duration", this.Duration },
         };
+
+    public static implicit operator Dictionary<string, object>(Replay replay)
+        => replay.AsDictionary();
 
     public static implicit operator Replay? (Dictionary<string, object> dict)
     {
