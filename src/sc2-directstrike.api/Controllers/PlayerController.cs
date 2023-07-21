@@ -92,7 +92,7 @@ public class PlayerController : ControllerBase
             query += $"AND InGameId = '{inGameId}' ";
         }
 
-        await dbContext.WriteToDb(query);
+        await dbContext.ExecuteQuery(query);
     }
 
     [HttpDelete("{id}")]
@@ -106,7 +106,7 @@ public class PlayerController : ControllerBase
         using var scope = this.serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        await dbContext.WriteToDb($"DELETE FROM {PlayerContext.Table} WHERE PKT = {PKTController.GetQuery(pkt)} AND Id = '{id}' ");
+        await dbContext.ExecuteQuery($"DELETE FROM {PlayerContext.Table} WHERE PKT = {PKTController.GetQuery(pkt)} AND Id = '{id}' ");
     }
 
 

@@ -1,7 +1,4 @@
-﻿using System.Xml.Linq;
-using Microsoft.AspNetCore.Http;
-
-namespace sc2_directstrike.api.Contexts;
+﻿namespace sc2_directstrike.api.Contexts;
 using DTOs;
 using Controllers;
 
@@ -34,5 +31,32 @@ public class PlayerContext
         var result = await dbContext.ReadFromDb(query);
 
         return result.Select(entry => (Player)entry!);
+    }
+
+    public async Task<Dictionary<ulong, Player>> GenerateIncrementedPlayers(string pkt,
+                                                                            IEnumerable<Player> players,
+                                                                            DbContext dbContext,
+                                                                            MySqlConnector.MySqlTransaction? transaction = null)
+    {
+        var players_list = players.ToList();
+
+        var existingPlayers = await dbContext.ReadFromDb($"SELECT * FROM {Table} WHERE PKT = {PKTController.GetQuery(pkt)}", transaction)!;
+        foreach (var existingPlayerDict in existingPlayers)
+        {
+            Player existingPlayer = existingPlayerDict!;
+            players_list.Add(existingPlayer);
+        }
+
+        players = players_list.DistinctBy(x => x.InGameId);
+
+        ulong[] player_ids = await dbContext.InsertIncremental(pkt, Table, players, transaction);
+        var players_inGameId = new Dictionary<ulong, Player>();
+
+        for (int i = 0; i < players.Count(); i++)
+        {
+            var player = players.ElementAt(i);
+            players_inGameId.Add(player.InGameId, player with { Id = player_ids[i] });
+        }
+        return players_inGameId;
     }
 }
